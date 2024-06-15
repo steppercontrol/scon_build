@@ -1,0 +1,5 @@
+#!/usr/bin/env python
+
+from mk_build import *
+
+gup("_build/all")

@@ -1,0 +1,2 @@
+builders/arduino_bin.py:
+    **.elf

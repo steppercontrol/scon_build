@@ -1,0 +1,6 @@
+#!/usr/bin/env python
+
+from mk_build import *
+
+gup("Calibration/all")
+gup("Planer/all")
