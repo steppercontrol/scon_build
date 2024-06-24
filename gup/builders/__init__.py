@@ -1,2 +1,1 @@
-from .arduino_bin import ArduinoBin  #noqa
-
+from .arduino_bin import ArduinoBin  # noqa: F401

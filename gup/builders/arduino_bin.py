@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
 from dataclasses import dataclass, field
-from pathlib import Path
-from typing import cast
 
 from mk_build import *
-from mk_build.config import config
+import mk_build.config as config_
+
+config = config_.get()
 
 
 @dataclass
@@ -39,15 +39,9 @@ class ArduinoBin(Target):
 if __name__ == '__main__':
     libraries = path(top_source_dir(), 'libraries')
 
-    builder = ArduinoBin(name=target, libraries=libraries)
+    sources = top_source_dir_add([path(config.target).with_suffix('')])
 
-    build_dir_ = cast(Path, build_dir())
-
-    source = source_dir([path(target).relative_to(build_dir_).with_suffix('')])
-
-    source = cast(list[Path], source)
-
-    builder.add_source(source[0])
+    builder = ArduinoBin(libraries=libraries, sources=sources)
 
     result = builder.update()
 
