@@ -17,7 +17,7 @@
 
       nativeBuildAndShellInputs = with pkgs; [ arduino-cli gup pythonPkgs ];
 
-      tools = with pkgs; [ arduino-ide gdb graphviz plantuml ];
+      tools = with pkgs; [ arduino-ide gdb ];
     in {
       packages.${system}.default = stdenv.mkDerivation {
         name = "planer_build";
