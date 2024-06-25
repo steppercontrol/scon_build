@@ -1,3 +1,7 @@
 .gup
 .venv
 /_*
+
+# nix
+
+result

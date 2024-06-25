@@ -1,0 +1,55 @@
+exit_handler() {
+    if [ ! -z "$saved_options" ]; then
+        printf "opt %s\n" "$saved_options"
+        eval "$saved_options"
+    fi
+}
+
+wsl_env() {
+    var="$(powershell.exe -command \"\$env:$1\" | sed -e 's/\r//' -e 's|\|/||')"
+    printf "%s" "$var"
+}
+
+require_var() {
+    if [ -z "$2" ]; then
+        printf "error: Windows variable %s is not set\n" "$1"
+        return 1
+    fi
+}
+
+set_env() {
+    if [ -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
+        # Running under WSL, so set the necessary environment variables.
+
+        : ${LOCALAPPDATA:="$(wsl_env LOCALAPPDATA)"}
+
+        require_var LOCALAPPDATA "$LOCALAPPDATA" || return 1
+
+        : ${USERPROFILE:="$(wsl_env USERPROFILE)"}
+
+        require_var USERPROFILE "$USERPROFILE" || return 1
+
+        : ${USERNAME:="$(wsl_env USERNAME)"}
+
+        require_var USERNAME "$USERNAME" || return 1
+
+        : ${ARDUINO_IDE:="$LOCALAPPDATA"'\Programs\Arduino IDE'}
+        : ${ARDUINO_IDE_DATA:="$USERPROFILE"'\.arduinoIDE'}
+        : ${ARDUINO_CLI:="$ARDUINO_IDE"'\resources\app\lib\backend\resources'}
+
+        export LOCALAPPDATA
+        export USERPROFILE
+        export USERNAME
+        export ARDUINO_IDE
+        export ARDUINO_IDE_DATA
+        export ARDUINO_CLI
+    fi
+}
+
+saved_options="$(set +o | tr '\n' ';')"
+
+set -u
+
+set_env
+
+exit_handler

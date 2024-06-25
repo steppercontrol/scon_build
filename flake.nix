@@ -9,11 +9,28 @@
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
+      stdenv = pkgs.stdenv;
 
-      nativeBuildAndShellInputs = with pkgs; [ arduino-cli gup ];
+      pythonPkgs = with pkgs.python3pkgs;
+        (pkgs.python3.withPackages
+          (python-pkgs: with python-pkgs; [ argcomplete ]));
+
+      nativeBuildAndShellInputs = with pkgs; [ arduino-cli gup pythonPkgs ];
 
       tools = with pkgs; [ arduino-ide gdb graphviz plantuml ];
     in {
+      packages.${system}.default = stdenv.mkDerivation {
+        name = "planer_build";
+        version = "0.1.0";
+
+        src = ./.;
+
+        installPhase = ''
+          mkdir -p $out/bin
+          cp sh/make_env $out/bin
+        '';
+      };
+
       hydraJobs = { inherit (self) packages; };
 
       devShells.${system}.default = pkgs.mkShell {
@@ -29,6 +46,11 @@
       in crossPkgs.mkShell {
         nativeBuildInputs = nativeBuildAndShellInputs ++ tools;
         inputsFrom = [ inputs.python-dev.devShells.${system}.default ];
+
+        shellHook = ''
+          . sh/make_env
+          # activate-global-python-argcomplete
+        '';
       };
     };
 }
