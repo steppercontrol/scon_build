@@ -10,47 +10,51 @@
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
       stdenv = pkgs.stdenv;
+      python = pkgs.python3;
+      pythonPkgs = python.python3pkgs;
 
-      pythonPkgs = with pkgs.python3pkgs;
+      pythonTools = with pythonPkgs;
         (pkgs.python3.withPackages
           (python-pkgs: with python-pkgs; [ argcomplete ]));
 
-      nativeBuildAndShellInputs = with pkgs; [ arduino-cli gup pythonPkgs ];
+      nativeBuildAndShellInputs = with pkgs; [ arduino-cli gup pythonTools ];
 
-      tools = with pkgs; [ arduino-ide gdb ];
-    in {
-      packages.${system}.default = stdenv.mkDerivation {
-        name = "planer_build";
-        version = "0.1.0";
+      version = "0.1.0";
+
+      pythonBuild = python.pkgs.buildPythonApplication {
+        inherit version;
+
+        pname = "planer_build";
+        format = "pyproject";
+
+        src = ./python;
+
+        propagatedBuildInputs = with python.pkgs; [ setuptools tomlkit ];
+      };
+
+      shell = stdenv.mkDerivation {
+        inherit version;
+
+        name = "planer_shell";
 
         src = ./.;
 
         installPhase = ''
           mkdir -p $out/bin
-          cp sh/make_env $out/bin
+          cp sh/planer_set_env $out/bin
         '';
+      };
+    in {
+      packages.${system}.default = pkgs.symlinkJoin {
+        name = "planer_build";
+        paths = [ pythonBuild shell ];
       };
 
       hydraJobs = { inherit (self) packages; };
 
       devShells.${system}.default = pkgs.mkShell {
-        nativeBuildInputs = nativeBuildAndShellInputs ++ tools
-          ++ (with pkgs; [ clang-tools ]);
-      };
-
-      devShells.avr.default = let
-        crossPkgs = import inputs.nixpkgs {
-          localSystem = system;
-          crossSystem = { config = "avr"; };
-        };
-      in crossPkgs.mkShell {
-        nativeBuildInputs = nativeBuildAndShellInputs ++ tools;
+        nativeBuildInputs = nativeBuildAndShellInputs;
         inputsFrom = [ inputs.dev.devShells.${system}.python ];
-
-        shellHook = ''
-          . sh/make_env
-          # activate-global-python-argcomplete
-        '';
       };
     };
 }

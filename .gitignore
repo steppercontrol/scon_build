@@ -5,3 +5,8 @@
 # nix
 
 result
+
+# python
+
+python/build
+python/planer_build.egg-info

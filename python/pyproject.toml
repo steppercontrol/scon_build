@@ -1,0 +1,27 @@
+[project]
+name = "planer_build"
+version = "0.0.1"
+requires-python = ">=3.10"
+
+dependencies = [
+]
+
+[project.optional-dependencies]
+test = [
+    "coverage",
+    "flake8",
+    "mypy",
+    "pytest"
+]
+
+[project.scripts]
+planer = "planer_build.planer_cli:main"
+
+[tool.coverage.run]
+source = [ "planer_build" ]
+
+[tool.mypy]
+packages = [ "planer_build", "test" ]
+
+[tool.pytest.ini_options]
+testpaths = [ "test" ]
