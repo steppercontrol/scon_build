@@ -1,7 +1,7 @@
 {
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
-    python-dev.url = "git+http://git/mkpkgs/python-dev.git";
+    dev.url = "git+http://git/mkpkgs/dev/dev.git";
   };
 
   outputs = { self, ... }@inputs:
@@ -45,7 +45,7 @@
         };
       in crossPkgs.mkShell {
         nativeBuildInputs = nativeBuildAndShellInputs ++ tools;
-        inputsFrom = [ inputs.python-dev.devShells.${system}.default ];
+        inputsFrom = [ inputs.dev.devShells.${system}.python ];
 
         shellHook = ''
           . sh/make_env

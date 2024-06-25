@@ -1,5 +1,23 @@
 {
   "nodes": {
+    "dev": {
+      "inputs": {
+        "nixpkgs": "nixpkgs"
+      },
+      "locked": {
+        "lastModified": 1718916099,
+        "narHash": "sha256-OUieD+oTGUMOHkXByxyaNzJ4Pav+bXMF3PRiSVQ7CDU=",
+        "ref": "refs/heads/master",
+        "rev": "499a693e2cdf4c78caffc0cd17b2784aa1e9ef89",
+        "revCount": 6,
+        "type": "git",
+        "url": "http://git/mkpkgs/dev/dev.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "http://git/mkpkgs/dev/dev.git"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1718160348,
@@ -11,7 +29,6 @@
       },
       "original": {
         "id": "nixpkgs",
-        "ref": "nixos-unstable",
         "type": "indirect"
       }
     },
@@ -26,31 +43,14 @@
       },
       "original": {
         "id": "nixpkgs",
+        "ref": "nixos-unstable",
         "type": "indirect"
-      }
-    },
-    "python-dev": {
-      "inputs": {
-        "nixpkgs": "nixpkgs_2"
-      },
-      "locked": {
-        "lastModified": 1718390597,
-        "narHash": "sha256-5uSE59iqfpHSMqWdNkmRexO/wA7L/NK6UHbrB4o+Po8=",
-        "ref": "refs/heads/master",
-        "rev": "2871b96b6535c7ab168ac9283457851d5220ba17",
-        "revCount": 1,
-        "type": "git",
-        "url": "http://git/mkpkgs/python-dev.git"
-      },
-      "original": {
-        "type": "git",
-        "url": "http://git/mkpkgs/python-dev.git"
       }
     },
     "root": {
       "inputs": {
-        "nixpkgs": "nixpkgs",
-        "python-dev": "python-dev"
+        "dev": "dev",
+        "nixpkgs": "nixpkgs_2"
       }
     }
   },
