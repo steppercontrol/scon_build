@@ -1,21 +1,101 @@
 #!/usr/bin/env python
 
-from dataclasses import dataclass
-import string
+from dataclasses import dataclass, field
+# import string
 import sys
 import tomllib
+from typing import Optional
 
-from mk_build import log
+from mk_build import log, environ, eprint, Path, PathInput
 import tomlkit
+
+from .message import platform_build_extra_flags
+
+
+def envrc_write(build: PathInput) -> None:
+    with open('.envrc', 'r') as fi:
+        lines = fi.readlines()
+
+    with open('.envrc', 'w') as fi:
+        out_line = f'export top_build_dir="{build}"'
+        replaced = False
+
+        for it in lines:
+            if not it.startswith('export top_build_dir'):
+                fi.write(it)
+            else:
+                fi.write(out_line)
+                eprint(f'.envrc: replace top build dir with {build}')
+                replaced = True
+
+        if not replaced:
+            fi.write(out_line)
+
+
+def arduino_ide_configure(source: Path, build: Path) -> None:
+    data = environ('ARDUINO_IDE_DATA', required=True)
+    path = f'{data}/arduino-cli.yaml'
+
+    with open(path, 'r') as fi:
+        lines = fi.readlines()
+
+    with open(path, 'w') as fi:
+        out_line = f'user: {source}'
+        replaced = False
+
+        for it in lines:
+            idx = it.find('user:')
+
+            if idx == -1:
+                fi.write(it)
+            elif out_line == it.strip():
+                fi.write(it)
+                replaced = True
+            else:
+                fi.write(f'{it[:idx + len("user:")]} {source}\n')
+
+                eprint(
+                    f'arduino-cli.yaml: replace user directory with "{source}"'
+                )
+                replaced = True
+
+        if not replaced:
+            raise Exception(
+                'arduino-cli.yaml: user directory entry not found'
+            )
+
+    # TODO choose based on board
+
+    path = None
+
+    with open(path, 'r') as fi:
+        lines = fi.readlines()
+
+    with open(path, 'w') as fi:
+        flags = f'-I{build}/config.h'
+        out_line = f'build.extra_flags={flags}'
+        replaced = False
+
+        for it in lines:
+            if not it.startswith('build.extra_flags='):
+                fi.write(it)
+            else:
+                fi.write(out_line)
+                eprint(str.format(platform_build_extra_flags, flags))
+                replaced = True
+
+        if not replaced:
+            fi.write(out_line)
 
 
 @dataclass
 class ConfigH:
-    board: str
-    port: str
+    board: Optional[str] = None
+    port: Optional[str] = None
+    environment: dict = field(default_factory=dict)
 
     @classmethod
-    def from_file(cls, path):
+    def from_file(cls, path) -> 'ConfigH':
         with open(path, 'rb') as f:
             toml = tomllib.load(f)
 
@@ -23,6 +103,7 @@ class ConfigH:
 
         ctx = cls(board=toml['board'], port=toml['port'])
 
+        '''
         t = toml['keypad']
 
         subs = {
@@ -60,17 +141,19 @@ class ConfigH:
             motor=motor, display=display)
 
         print(template)
+        '''
+
         ctx.toml = tomlkit.dumps(toml)
 
         return ctx
 
     @staticmethod
-    def _initializer(list_):
+    def _initializer(list_) -> str:
         array = str(list_)
         return '{' + array[1:-1] + '}'
 
     @staticmethod
-    def _buffer_mode(val):
+    def _buffer_mode(val: str) -> str:
         if val == '1Page':
             result = '_1Page'
         elif val == '2Page':
@@ -81,6 +164,10 @@ class ConfigH:
             raise ValueError()
 
         return result
+
+    @property
+    def arduino_core(self) -> Path:
+        return Path(f"{self.environment['arduino']}/hardware/renesas_uno/1.2.0")
 
 
 _config = {
@@ -130,7 +217,7 @@ ${display}
 #endif // Planer__config_h_INCLUDED"""}
 
 
-def main():
+def main() -> None:
     path = sys.argv[1]
 
     ConfigH.from_file(path)
