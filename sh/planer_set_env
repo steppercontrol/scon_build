@@ -33,6 +33,7 @@ set_env() {
 
         require_var USERNAME "$USERNAME" || return 1
 
+        : ${ARDUINO:="$LOCALAPPDATA"'\Arduino15\packages\arduino'}
         : ${ARDUINO_IDE:="$LOCALAPPDATA"'\Programs\Arduino IDE'}
         : ${ARDUINO_IDE_DATA:="$USERPROFILE"'\.arduinoIDE'}
         : ${ARDUINO_CLI:="$ARDUINO_IDE"'\resources\app\lib\backend\resources'}
@@ -40,10 +41,22 @@ set_env() {
         export LOCALAPPDATA
         export USERPROFILE
         export USERNAME
-        export ARDUINO_IDE
-        export ARDUINO_IDE_DATA
-        export ARDUINO_CLI
+    else
+        : ${ARDUINO:="$HOME/.arduino15/packages/arduino'}
+        : ${ARDUINO_IDE:=arduino-ide}
+        : ${ARDUINO_IDE_DATA:="$HOME/.arduinoIDE"}
+        : ${ARDUINO_CLI=arduino-cli}
     fi
+
+    require_var ARDUINO "$ARDUINO_IDE" || return 1
+    require_var ARDUINO_IDE "$ARDUINO_IDE" || return 1
+    require_var ARDUINO_IDE_DATA "$ARDUINO_IDE_DATA" || return 1
+    require_var ARDUINO_CLI "$ARDUINO_CLI" || return 1
+
+    export ARDUINO
+    export ARDUINO_IDE
+    export ARDUINO_IDE_DATA
+    export ARDUINO_CLI
 }
 
 saved_options="$(set +o | tr '\n' ';')"
