@@ -1,6 +1,7 @@
 {
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
+    mk_build.url = "git+http://git/mk_build.git?ref=develop";
     dev.url = "git+http://git/mkpkgs/dev/dev.git";
   };
 
@@ -29,7 +30,12 @@
 
         src = ./python;
 
-        propagatedBuildInputs = with python.pkgs; [ setuptools tomlkit ];
+        propagatedBuildInputs = with python.pkgs; [
+          argcomplete
+          inputs.mk_build.packages.${system}.default
+          setuptools
+          tomlkit
+        ];
       };
 
       shell = stdenv.mkDerivation {

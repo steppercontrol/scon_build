@@ -18,6 +18,25 @@
         "url": "http://git/mkpkgs/dev/dev.git"
       }
     },
+    "mk_build": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_2"
+      },
+      "locked": {
+        "lastModified": 1719010071,
+        "narHash": "sha256-yVcpfbvZYEqkVsF2Ph2/a/mfYeW1ggdpBRxDckbteZc=",
+        "ref": "develop",
+        "rev": "9e80e64cb46a954d475dbe40f54c0495dda4c61d",
+        "revCount": 74,
+        "type": "git",
+        "url": "http://git/mk_build.git"
+      },
+      "original": {
+        "ref": "develop",
+        "type": "git",
+        "url": "http://git/mk_build.git"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1718160348,
@@ -47,10 +66,26 @@
         "type": "indirect"
       }
     },
+    "nixpkgs_3": {
+      "locked": {
+        "lastModified": 1718160348,
+        "narHash": "sha256-9YrUjdztqi4Gz8n3mBuqvCkMo4ojrA6nASwyIKWMpus=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "57d6973abba7ea108bac64ae7629e7431e0199b6",
+        "type": "github"
+      },
+      "original": {
+        "id": "nixpkgs",
+        "ref": "nixos-unstable",
+        "type": "indirect"
+      }
+    },
     "root": {
       "inputs": {
         "dev": "dev",
-        "nixpkgs": "nixpkgs_2"
+        "mk_build": "mk_build",
+        "nixpkgs": "nixpkgs_3"
       }
     }
   },
