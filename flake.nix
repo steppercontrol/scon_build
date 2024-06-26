@@ -58,7 +58,12 @@
 
       hydraJobs = { inherit (self) packages; };
 
-      devShells.${system}.default = pkgs.mkShell {
+      devShells.${system}.default = let
+        crossPkgs = import inputs.nixpkgs {
+          localSystem = system;
+          crossSystem = { config = "avr"; };
+        };
+      in crossPkgs.mkShell {
         nativeBuildInputs = nativeBuildAndShellInputs;
         inputsFrom = [ inputs.dev.devShells.${system}.python ];
       };
