@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from dataclasses import dataclass, field
-# import string
+import string
 from os.path import exists
 from typing import Optional
 
@@ -154,47 +154,56 @@ class Config(BaseConfig):
             ensure_type(arduino.get('port'), str)
         )
 
-        '''
-        t = toml['keypad']
+        return ctx
 
-        subs = {
+    def write_config_h(self, path: str) -> None:
+        toml = self.config
+        t = ensure_type(toml['keypad'], Table)
+
+        subs: dict[str, str | int] = {
             'row_pins': Config._initializer(t['row_pins']),
             'col_pins': Config._initializer(t['column_pins']),
         }
 
         keypad = string.Template(_config['keypad']).substitute(subs)
 
-        t = toml['motor']
+        t = ensure_type(toml['motor'], Table)
 
         subs = {
-            'steps_per_revolution': t['steps_per_revolution'],
+            'steps_per_revolution': ensure_type(
+                t['steps_per_revolution'],
+                int
+            ),
             'pins': Config._initializer(t['pins'])
         }
 
         motor = string.Template(_config['motor']).substitute(subs)
 
-        t = toml['display']
+        t = ensure_type(toml['display'], Table)
 
         subs = {
-            'controller': t['controller'],
-            'buffer_mode': Config._buffer_mode(t['buffer_mode']),
-            'clock': t['clock'],
-            'data': t['data'],
-            'cs': t['cs'],
-            'dc': t['dc'],
-            'reset': t['reset'],
-            'backlight': t['backlight']
+            'controller': ensure_type(t['controller'], str),
+            'buffer_mode': Config._buffer_mode(
+                ensure_type(t['buffer_mode'], str)
+            ),
+            'clock': ensure_type(t['clock'], int),
+            'data': ensure_type(t['data'], int),
+            'cs': ensure_type(t['cs'], int),
+            'dc': ensure_type(t['dc'], int),
+            'reset': ensure_type(t['reset'], int),
+            'backlight': ensure_type(t['backlight'], int)
         }
 
         display = string.Template(_config['display']).substitute(subs)
 
-        template = string.Template(_config['full']).substitute(keypad=keypad,
-            motor=motor, display=display)
+        template = string.Template(_config['full']).substitute(
+            keypad=keypad,
+            motor=motor,
+            display=display
+        )
 
-        print(template)
-        '''
-
-        return ctx
+        with open(path, 'w') as fi:
+            fi.write(template)
 
     def write_toml(self, path: str, mode='w') -> None:
         self.write(path, mode)

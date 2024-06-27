@@ -69,30 +69,43 @@ class CLI:
         log.debug(f'CLI {self}')
 
     def configure(self, args) -> None:
+        top_build_dir = self.config_file.top_build_dir
+        top_build_dir = ensure_type(top_build_dir, Path)
+
         # TODO get this from a known path
 
         cfg = PlanerConfig.from_file('config.toml.default')
-        log.debug(f'config {cfg}')
 
-        top_build_dir = self.config_file.top_build_dir
+        def _planer():
+            log.debug(f'config {cfg}')
 
-        if not isdir(top_build_dir):
-            eprint(str.format(build_dir_not_found, top_build_dir))
+            if not isdir(top_build_dir):
+                eprint(str.format(build_dir_not_found, top_build_dir))
 
-            raise FatalError()
+                raise FatalError()
 
-        path = f'{self.config_file.top_build_dir}/config.toml'
+            path = f'{self.config_file.top_build_dir}/config.toml'
 
-        cfg.write_toml(path, 'w')
+            cfg.write_toml(path, 'w')
 
-        self.config_file = BuildConfig()
+        def _build():
+            self.config_file = BuildConfig()
 
-        log.debug(f'configuration: {self.config_file}')
-        log.debug(f'write configuration: {path}')
+            path = f'{self.config_file.top_build_dir}/config.toml'
 
-        self.config_file.write(path, 'a')
+            log.debug(f'configuration: {self.config_file}')
+            log.debug(f'write configuration: {path}')
 
-        top_build_dir = ensure_type(top_build_dir, Path)
+            self.config_file.write(path, 'a')
+
+        def _config_h():
+            path = f'{self.config_file.top_build_dir}/config.h'
+
+            cfg.write_config_h(path)
+
+        _planer()
+        _build()
+        _config_h()
 
         configure_.envrc_write(top_build_dir)
 
