@@ -10,6 +10,7 @@
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
+      lib = pkgs.lib;
       stdenv = pkgs.stdenv;
       python = pkgs.python3;
       pythonPkgs = python.python3pkgs;
@@ -36,6 +37,12 @@
           setuptools
           tomlkit
         ];
+
+        postInstall = with pkgs; ''
+          wrapProgram $out/bin/planer \
+            --set GUP ${shell} \
+            --prefix PATH : ${lib.makeBinPath [ gup ]}
+        '';
       };
 
       shell = stdenv.mkDerivation {
@@ -47,6 +54,8 @@
 
         installPhase = ''
           mkdir -p $out/bin
+
+          cp -r $src/gup $out
           cp sh/planer_set_env $out/bin
         '';
       };

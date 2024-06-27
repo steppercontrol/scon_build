@@ -4,7 +4,8 @@
 import argparse
 from dataclasses import dataclass, field
 import os
-from os.path import isfile
+from os import remove, symlink
+from os.path import isfile, islink
 import sys
 
 import argcomplete
@@ -182,9 +183,16 @@ class CLI:
             '-v'
         ])
 
+    def build(self, args) -> CompletedProcess:
+        gup_dir = f'{self.config_file.top_source_dir}/gup'
+        gup_src = f"{environ('GUP', required=True)}/gup"
 
-def build(args) -> CompletedProcess:
-    return run(['gup', '-j', '4'])
+        if islink(gup_dir):
+            remove(gup_dir)
+
+        symlink(gup_src, gup_dir)
+
+        return run(['gup', '-j', '4', '_build/all'])
 
 
 class Parser:
@@ -198,7 +206,7 @@ class Parser:
 
         self._init_configure(cli)
         self._init_init_ide(cli)
-        self._init_build()
+        self._init_build(cli)
         self._init_monitor(cli)
         self._init_upload(cli)
 
@@ -228,9 +236,9 @@ class Parser:
 
         func(args)
 
-    def _init_build(self) -> None:
+    def _init_build(self, cli) -> None:
         subparser = self.subparsers.add_parser('build')
-        subparser.set_defaults(func=build)
+        subparser.set_defaults(func=cli.build)
 
     def _init_configure(self, cli) -> None:
         subparser = self.subparsers.add_parser('configure')
