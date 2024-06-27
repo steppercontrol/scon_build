@@ -33,9 +33,6 @@ class CLI:
     config_file: BuildConfig = field(default_factory=BuildConfig)
     environment: dict = field(default_factory=dict)
 
-    def __post_init__(self, *args, **kwargs) -> None:
-        self.init(**kwargs)
-
     def init(self, **kwargs) -> None:
         if 'source' not in kwargs or kwargs['source'] is None:
             source = os.getcwd()
@@ -51,6 +48,9 @@ class CLI:
             os.environ['top_build_dir'] = build
         else:
             build = environ('top_build_dir')
+
+        if build == source:
+            raise ValueError()
 
         # TODO not sure if we need this in environment
 
