@@ -42,7 +42,7 @@ set_env() {
         export USERPROFILE
         export USERNAME
     else
-        : ${ARDUINO:="$HOME/.arduino15/packages/arduino'}
+        : ${ARDUINO:="$HOME/.arduino15/packages/arduino"}
         : ${ARDUINO_IDE:=arduino-ide}
         : ${ARDUINO_IDE_DATA:="$HOME/.arduinoIDE"}
         : ${ARDUINO_CLI=arduino-cli}
