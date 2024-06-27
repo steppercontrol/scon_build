@@ -1,11 +1,11 @@
-from planer_build.configure import ConfigH
+from planer_build.configure import Config
 
 from . import data_dir
 
 
 class TestConfig:
     def setup_method(self) -> None:
-        self.config = ConfigH.from_file(f'{data_dir}/config.toml')
+        self.config = Config.from_file(f'{data_dir}/config.toml')
 
     def test_config(self):
         config = self.config

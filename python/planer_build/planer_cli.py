@@ -9,7 +9,7 @@ import sys
 
 import argcomplete
 # import mk_build.configure
-from mk_build.config import Config
+from mk_build.config import Config as BuildConfig
 from mk_build import environ, eprint, Path
 
 from mk_build import CompletedProcess, log, run
@@ -17,7 +17,7 @@ from mk_build.util import isdir
 from mk_build.validate import ensure_type
 
 import planer_build.configure as configure_
-from planer_build.configure import ConfigH
+from planer_build.configure import Config as PlanerConfig
 from .message import build_dir_not_found
 
 
@@ -27,8 +27,8 @@ class FatalError(Exception):
 
 @dataclass
 class CLI:
-    config: ConfigH = field(default_factory=ConfigH)
-    config_file: Config = field(default_factory=Config)
+    config: PlanerConfig = field(default_factory=PlanerConfig)
+    config_file: BuildConfig = field(default_factory=BuildConfig)
     environment: dict = field(default_factory=dict)
 
     def __post_init__(self, *args, **kwargs) -> None:
@@ -37,25 +37,28 @@ class CLI:
     def init(self, **kwargs) -> None:
         if 'source' not in kwargs or kwargs['source'] is None:
             source = os.getcwd()
+            log.info(f'Auto-detected source directory: {source}')
         else:
             source = kwargs['source']
 
-        if 'build' not in kwargs or kwargs['build'] is None:
-            build = f'{source}/_build'
-        else:
+        # The top build directory will have been set when we imported
+        # mk_build.config above. Override it if provided.
+
+        if 'build' in kwargs and kwargs['build'] is not None:
             build = str(Path(kwargs['build']).absolute())
+            os.environ['top_build_dir'] = build
+        else:
+            build = environ('top_build_dir')
+
+        # TODO not sure if we need this in environment
 
         os.environ['top_source_dir'] = source
-        os.environ['top_build_dir'] = build
-
-        log.info(f'Auto-detected source directory: {source}')
-        log.info(f'Auto-detected build directory: {build}')
 
         path = f'{build}/config.toml'
 
         if isfile(path):
-            self.config = configure_.ConfigH.from_file(path)
-            self.config_file = Config.from_file(path)
+            self.config = PlanerConfig.from_file(path)
+            self.config_file = BuildConfig.from_file(path)
 
         # If arguments are provided, override config file.
 
@@ -65,7 +68,9 @@ class CLI:
         log.debug(f'CLI {self}')
 
     def configure(self, args) -> None:
-        cfg = configure_.ConfigH.from_file('config.toml.default')
+        # TODO get this from a known path
+
+        cfg = PlanerConfig.from_file('config.toml.default')
         log.debug(f'config {cfg}')
 
         top_build_dir = self.config_file.top_build_dir
@@ -79,7 +84,7 @@ class CLI:
 
         cfg.write_toml(path, 'w')
 
-        self.config_file = Config()
+        self.config_file = BuildConfig()
 
         log.debug(f'configuration: {self.config_file}')
         log.debug(f'write configuration: {path}')
@@ -132,7 +137,11 @@ class CLI:
         top_source_dir = ensure_type(top_source_dir, Path)
         top_build_dir = ensure_type(top_build_dir, Path)
 
-        configure_.arduino_ide_configure(top_source_dir, top_build_dir)
+        configure_.arduino_ide_configure(
+            self.config,
+            top_source_dir,
+            top_build_dir
+        )
 
     def monitor(self, args) -> None:
         board = self.config.arduino.board

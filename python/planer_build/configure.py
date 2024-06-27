@@ -2,10 +2,10 @@
 
 from dataclasses import dataclass, field
 # import string
-import sys
+from os.path import exists
 from typing import Optional
 
-from mk_build import log, environ, eprint, Path, PathInput
+from mk_build import log, environ, eprint, path, Path, PathInput
 from mk_build.config import BaseConfig
 from mk_build.validate import ensure_type
 from tomlkit.items import Table
@@ -90,7 +90,7 @@ def arduino_ide_configure(source: Path, build: Path) -> None:
 
 
 @dataclass
-class ConfigH(BaseConfig):
+class Config(BaseConfig):
     @dataclass
     class Arduino:
         core: Optional[str] = None
@@ -102,7 +102,7 @@ class ConfigH(BaseConfig):
     environment: dict = field(default_factory=dict)
 
     @classmethod
-    def from_file(cls, path: str) -> 'ConfigH':
+    def from_file(cls, path: str) -> 'Config':
         """ Parse the configuration from an existing file. """
 
         ctx = cls()
@@ -123,8 +123,8 @@ class ConfigH(BaseConfig):
         t = toml['keypad']
 
         subs = {
-            'row_pins': ConfigH._initializer(t['row_pins']),
-            'col_pins': ConfigH._initializer(t['column_pins']),
+            'row_pins': Config._initializer(t['row_pins']),
+            'col_pins': Config._initializer(t['column_pins']),
         }
 
         keypad = string.Template(_config['keypad']).substitute(subs)
@@ -133,7 +133,7 @@ class ConfigH(BaseConfig):
 
         subs = {
             'steps_per_revolution': t['steps_per_revolution'],
-            'pins': ConfigH._initializer(t['pins'])
+            'pins': Config._initializer(t['pins'])
         }
 
         motor = string.Template(_config['motor']).substitute(subs)
@@ -142,7 +142,7 @@ class ConfigH(BaseConfig):
 
         subs = {
             'controller': t['controller'],
-            'buffer_mode': ConfigH._buffer_mode(t['buffer_mode']),
+            'buffer_mode': Config._buffer_mode(t['buffer_mode']),
             'clock': t['clock'],
             'data': t['data'],
             'cs': t['cs'],
@@ -234,11 +234,19 @@ ${display}
 #endif // Planer__config_h_INCLUDED"""}
 
 
-def main() -> None:
-    path = sys.argv[1]
+def _create(*args, **kwargs) -> Config:
+    config_path = f'{environ("top_build_dir")}/config.toml'
 
-    ConfigH.from_file(path)
+    if exists(config_path):
+        config = Config.from_file(config_path)
+    else:
+        config = Config(*args, **kwargs)
+
+    return config
 
 
-if __name__ == '__main__':
-    main()
+config = _create()
+
+
+def get():
+    return config
