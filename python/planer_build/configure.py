@@ -86,7 +86,8 @@ def _arduino_ide_platform_configure(
 ) -> None:
     platform_path = path(_arduino_core_path(config), 'platform.local.txt')
 
-    flags = f'-I{build}'
+    # flags for master branch
+    flags = f'-I{build} -DU8G2_USE_DYNAMIC_ALLOC'
     out_line = f'build.extra_flags={flags}\n'
 
     try:
