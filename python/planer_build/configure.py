@@ -33,7 +33,20 @@ def envrc_write(build: PathInput) -> None:
             fi.write(out_line)
 
 
-def arduino_ide_configure(source: Path, build: Path) -> None:
+def arduino_ide_configure(
+    config: 'Config',
+    source: Path,
+    build: Path
+) -> None:
+    _arduino_ide_cli_configure(config, source, build)
+    _arduino_ide_platform_configure(config, source, build)
+
+
+def _arduino_ide_cli_configure(
+    config: 'Config',
+    source: Path,
+    build: Path
+) -> None:
     data = environ('ARDUINO_IDE_DATA', required=True)
     path = f'{data}/arduino-cli.yaml'
 
@@ -65,28 +78,50 @@ def arduino_ide_configure(source: Path, build: Path) -> None:
                 'arduino-cli.yaml: user directory entry not found'
             )
 
-    # TODO choose based on board
 
-    path = None
+def _arduino_ide_platform_configure(
+    config: 'Config',
+    source: Path,
+    build: Path
+) -> None:
+    platform_path = path(_arduino_core_path(config), 'platform.local.txt')
 
-    with open(path, 'r') as fi:
-        lines = fi.readlines()
+    flags = f'-I{build}'
+    out_line = f'build.extra_flags={flags}\n'
 
-    with open(path, 'w') as fi:
-        flags = f'-I{build}/config.h'
-        out_line = f'build.extra_flags={flags}'
-        replaced = False
+    try:
+        with open(platform_path, 'r') as fi:
+            lines = fi.readlines()
 
-        for it in lines:
-            if not it.startswith('build.extra_flags='):
-                fi.write(it)
-            else:
+        with open(platform_path, 'w') as fi:
+            replaced = False
+
+            for it in lines:
+                if not it.startswith('build.extra_flags='):
+                    fi.write(it)
+                else:
+                    fi.write(out_line)
+                    eprint(str.format(platform_build_extra_flags, flags))
+                    replaced = True
+
+            if not replaced:
                 fi.write(out_line)
-                eprint(str.format(platform_build_extra_flags, flags))
-                replaced = True
+    except FileNotFoundError:
+        # The file doesn't exist, so create it and add our content.
 
-        if not replaced:
+        with open(platform_path, 'w') as fi:
             fi.write(out_line)
+
+
+def _arduino_core_path(config) -> Path:
+    arch = _arduino_arch(config.arduino.core)
+    version = config.arduino.version
+
+    return Path(f"{config.environment['arduino']}/hardware/{arch}/{version}")
+
+
+def _arduino_arch(core) -> str:
+    return core[core.find(':') + 1:]
 
 
 @dataclass
@@ -181,10 +216,6 @@ class Config(BaseConfig):
             raise ValueError()
 
         return result
-
-    @property
-    def arduino_core(self) -> Path:
-        return Path(f"{self.environment['arduino']}/hardware/renesas_uno/1.2.0")
 
 
 _config = {

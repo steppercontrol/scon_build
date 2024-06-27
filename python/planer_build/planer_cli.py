@@ -19,6 +19,7 @@ from mk_build.validate import ensure_type
 import planer_build.configure as configure_
 from planer_build.configure import Config as PlanerConfig
 from .message import build_dir_not_found
+from .tools import arduino_cli
 
 
 class FatalError(Exception):
@@ -117,16 +118,13 @@ class CLI:
         # install core for board
 
         arduino = self.config.arduino
-        # board = ensure_type(arduino.board, str)
         core = ensure_type(arduino.core, str)
         version = ensure_type(arduino.version, str)
-        cli = self.config.environment['arduino_cli']
-
-        # log.debug(f'CLI {self}')
 
         log.info(f'Install core {core}')
 
-        run([cli, 'core', 'install', f'{core}@{version}'])
+        if arduino_cli.core_install(f'{core}@{version}').returncode != 0:
+            raise Exception()
 
         # modify platform settings for builds
         # modify arduino-cli.yaml (sketchbook)
