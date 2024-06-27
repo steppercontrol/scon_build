@@ -3,11 +3,12 @@
 from dataclasses import dataclass, field
 # import string
 import sys
-import tomllib
 from typing import Optional
 
 from mk_build import log, environ, eprint, Path, PathInput
-import tomlkit
+from mk_build.config import BaseConfig
+from mk_build.validate import ensure_type
+from tomlkit.items import Table
 
 from .message import platform_build_extra_flags
 
@@ -17,7 +18,7 @@ def envrc_write(build: PathInput) -> None:
         lines = fi.readlines()
 
     with open('.envrc', 'w') as fi:
-        out_line = f'export top_build_dir="{build}"'
+        out_line = f'export top_build_dir="{build}"\n'
         replaced = False
 
         for it in lines:
@@ -89,19 +90,34 @@ def arduino_ide_configure(source: Path, build: Path) -> None:
 
 
 @dataclass
-class ConfigH:
-    board: Optional[str] = None
-    port: Optional[str] = None
+class ConfigH(BaseConfig):
+    @dataclass
+    class Arduino:
+        core: Optional[str] = None
+        version: Optional[str] = None
+        board: Optional[str] = None
+        port: Optional[str] = None
+
+    arduino: Arduino = field(default_factory=Arduino)
     environment: dict = field(default_factory=dict)
 
     @classmethod
-    def from_file(cls, path) -> 'ConfigH':
-        with open(path, 'rb') as f:
-            toml = tomllib.load(f)
+    def from_file(cls, path: str) -> 'ConfigH':
+        """ Parse the configuration from an existing file. """
 
-        log.debug(f'config {toml}')
+        ctx = cls()
+        ctx._init_from_file(path)
 
-        ctx = cls(board=toml['board'], port=toml['port'])
+        log.debug(f'config {ctx.config}')
+
+        arduino = ensure_type(ctx.config.get('arduino'), Table)
+
+        ctx.arduino = cls.Arduino(
+            ensure_type(arduino.get('core'), str),
+            ensure_type(arduino.get('version'), str),
+            ensure_type(arduino.get('board'), str),
+            ensure_type(arduino.get('port'), str)
+        )
 
         '''
         t = toml['keypad']
@@ -143,9 +159,10 @@ class ConfigH:
         print(template)
         '''
 
-        ctx.toml = tomlkit.dumps(toml)
-
         return ctx
+
+    def write_toml(self, path: str, mode='w') -> None:
+        self.write(path, mode)
 
     @staticmethod
     def _initializer(list_) -> str:

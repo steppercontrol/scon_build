@@ -77,8 +77,7 @@ class CLI:
 
         path = f'{self.config_file.top_build_dir}/config.toml'
 
-        with open(path, 'w') as fi:
-            fi.write(cfg.toml)
+        cfg.write_toml(path, 'w')
 
         self.config_file = Config()
 
@@ -97,40 +96,32 @@ class CLI:
         # detect installation
 
         try:
-            arduino = environ('ARDUINO', required=True)
-            ide = environ('ARDUINO_IDE', required=True)
-            data = environ('ARDUINO_IDE_DATA', required=True)
-            cli = environ('ARDUINO_CLI', required=True)
+            self.config.environment = {
+                'arduino': environ('ARDUINO', required=True),
+                'arduino_ide': environ('ARDUINO_IDE', required=True),
+                'arduino_ide_data': environ('ARDUINO_IDE_DATA', required=True),
+                'arduino_cli': environ('ARDUINO_CLI', required=True)
+            }
         except Exception as e:
             eprint(e)
 
             raise FatalError()
 
-        self.config.environment = {
-            'arduino': arduino,
-            'arduino_ide': ide,
-            'arduino_ide_data': data,
-            'arduino_cli': cli
-        }
-
-        log.debug(f'CLI {self}')
-
         # TODO modify settings.json
 
         # install core for board
 
-        board = self.config.board
+        arduino = self.config.arduino
+        # board = ensure_type(arduino.board, str)
+        core = ensure_type(arduino.core, str)
+        version = ensure_type(arduino.version, str)
+        cli = self.config.environment['arduino_cli']
 
-        if not isinstance(board, str):
-            eprint(f'Configuration property "board" has invalid value {board}')
-
-            raise FatalError()
-
-        core = board[:board.rfind(':')]
+        # log.debug(f'CLI {self}')
 
         log.info(f'Install core {core}')
 
-        run([cli, 'core', 'install', core])
+        run([cli, 'core', 'install', f'{core}@{version}'])
 
         # modify platform settings for builds
         # modify arduino-cli.yaml (sketchbook)
@@ -144,8 +135,8 @@ class CLI:
         configure_.arduino_ide_configure(top_source_dir, top_build_dir)
 
     def monitor(self, args) -> None:
-        board = self.config.board
-        port = self.config.port
+        board = self.config.arduino.board
+        port = self.config.arduino.port
 
         run([
             'arduino-cli', 'monitor',
@@ -160,8 +151,8 @@ class CLI:
         # arduino-cli upload --input-file $sketch -b $BOARD -p $port -v && \
         # arduino-cli monitor -q --raw -b $BOARD -p $port -c baudrate=115200
 
-        board = self.config.board
-        port = self.config.port
+        board = self.config.arduino.board
+        port = self.config.arduino.port
 
         run([
             'arduino-cli', 'upload',

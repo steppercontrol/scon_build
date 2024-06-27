@@ -1,0 +1,25 @@
+[arduino]
+core = "arduino:renesas_uno"
+version = "1.2.0"
+board = "minima"
+port = "/dev/ttyACM0"
+
+[keypad]
+row_pins = [3, 2, 14, 15]
+column_pins = [16, 17, 18, 19]
+# TODO not yet implemented
+driver = "digital"  # "digital" | "analog"
+
+[motor]
+steps_per_revolution = 2048
+pins = [8, 10, 9, 12]
+
+[display]
+controller = "PCD8544"  # "PCD8544" | "SSD1306"
+buffer_mode = "1Page"  # "1Page" | "2Page" | "Full"
+clock = 13
+data = 11
+cs = 6
+dc = 4
+reset = 5
+backlight = 7
