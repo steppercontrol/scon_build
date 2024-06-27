@@ -4,8 +4,11 @@ from dataclasses import dataclass, field
 
 from mk_build import *
 import mk_build.config as config_
+import planer_build.configure as planer_config_
+from planer_build.tools import arduino_cli
 
 config = config_.get()
+planer_config = planer_config_.get()
 
 
 @dataclass
@@ -14,26 +17,10 @@ class ArduinoBin(Target):
 
     libraries: Path = field(default_factory=Path)
 
-    def update(self):
+    def update(self) -> None:
         super().update()
 
-        build_path = build_dir()
-
-        board = 'arduino:avr:mega'
-
-        args = [
-            'arduino-cli', 'compile', self.sources[0],
-            '--optimize-for-debug',
-            '--build-path', build_path,
-            '--warnings', 'all',
-            '-b', board,
-            '--libraries', self.libraries
-        ]
-
-        if config.verbose > 0:
-            args.append('-v')
-
-        return run(args)
+        arduino_cli.compile(self.sources[0], build_dir(), self.libraries)
 
 
 if __name__ == '__main__':
@@ -43,6 +30,4 @@ if __name__ == '__main__':
 
     builder = ArduinoBin(libraries=libraries, sources=sources)
 
-    result = builder.update()
-
-    exit(result)
+    builder.update()
