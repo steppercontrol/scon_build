@@ -23,11 +23,11 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1719010071,
-        "narHash": "sha256-yVcpfbvZYEqkVsF2Ph2/a/mfYeW1ggdpBRxDckbteZc=",
+        "lastModified": 1719531085,
+        "narHash": "sha256-NrR6mQ2Uw/8z0v2KbNIm7xjVsADGkNqXEFcpk5M4hMY=",
         "ref": "develop",
-        "rev": "9e80e64cb46a954d475dbe40f54c0495dda4c61d",
-        "revCount": 74,
+        "rev": "03435f805ce1f08ebb755fe3b1d8ad42c62bf650",
+        "revCount": 91,
         "type": "git",
         "url": "http://git/mk_build.git"
       },
