@@ -33,6 +33,29 @@ def envrc_write(build: PathInput) -> None:
             fi.write(out_line)
 
 
+def shell_configure() -> None:
+    rc = Path(environ('HOME'), '.bashrc')
+    out_line = 'eval "$(direnv hook bash)"'
+
+    found = False
+
+    try:
+        with open(rc, 'r') as fi:
+            lines = fi.readlines()
+
+        for it in lines:
+            if it.startswith(out_line):
+                found = True
+                break
+    except FileNotFoundError:
+        # The file doesn't exist, so create it and add our content.
+        pass
+
+    if not found:
+        with open(rc, 'a') as fi:
+            fi.write(f'{out_line}\n')
+
+
 def arduino_ide_configure(
     config: 'Config',
     source: Path,

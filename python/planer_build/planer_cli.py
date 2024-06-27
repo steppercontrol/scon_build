@@ -112,7 +112,7 @@ class CLI:
 
         # mk_build.configure.main()
 
-    def init_ide(self, args) -> None:
+    def init_env(self, args) -> None:
         # detect installation
 
         try:
@@ -127,33 +127,38 @@ class CLI:
 
             raise FatalError()
 
-        # TODO modify settings.json
+        if args.shell:
+            configure_.shell_configure()
 
-        # install core for board
+        if args.arduino_ide:
+            # TODO modify settings.json
 
-        arduino = self.config.arduino
-        core = ensure_type(arduino.core, str)
-        version = ensure_type(arduino.version, str)
+            # modify platform settings for builds
+            # modify arduino-cli.yaml (sketchbook)
 
-        log.info(f'Install core {core}')
+            top_source_dir = self.config_file.top_source_dir
+            top_build_dir = self.config_file.top_build_dir
 
-        if arduino_cli.core_install(f'{core}@{version}').returncode != 0:
-            raise Exception()
+            top_source_dir = ensure_type(top_source_dir, Path)
+            top_build_dir = ensure_type(top_build_dir, Path)
 
-        # modify platform settings for builds
-        # modify arduino-cli.yaml (sketchbook)
+            configure_.arduino_ide_configure(
+                self.config,
+                top_source_dir,
+                top_build_dir
+            )
 
-        top_source_dir = self.config_file.top_source_dir
-        top_build_dir = self.config_file.top_build_dir
+        if args.arduino_core:
+            # install core for board
 
-        top_source_dir = ensure_type(top_source_dir, Path)
-        top_build_dir = ensure_type(top_build_dir, Path)
+            arduino = self.config.arduino
+            core = ensure_type(arduino.core, str)
+            version = ensure_type(arduino.version, str)
 
-        configure_.arduino_ide_configure(
-            self.config,
-            top_source_dir,
-            top_build_dir
-        )
+            log.info(f'Install core {core}')
+
+            if arduino_cli.core_install(f'{core}@{version}').returncode != 0:
+                raise Exception()
 
     def monitor(self, args) -> None:
         board = self.config.arduino.board
@@ -205,7 +210,7 @@ class Parser:
         self.subparsers = self.parser.add_subparsers(required=True)
 
         self._init_configure(cli)
-        self._init_init_ide(cli)
+        self._init_init_env(cli)
         self._init_build(cli)
         self._init_monitor(cli)
         self._init_upload(cli)
@@ -244,9 +249,11 @@ class Parser:
         subparser = self.subparsers.add_parser('configure')
         subparser.set_defaults(func=cli.configure)
 
-    def _init_init_ide(self, cli) -> None:
-        subparser = self.subparsers.add_parser('init-ide')
-        subparser.set_defaults(func=cli.init_ide)
+    def _init_init_env(self, cli) -> None:
+        subparser = self.subparsers.add_parser('init')
+        subparser.add_argument('--shell', action='store_true')
+        subparser.add_argument('--arduino-ide', action='store_true')
+        subparser.set_defaults(func=cli.init_env)
 
     def _init_monitor(self, cli) -> None:
         subparser = self.subparsers.add_parser('monitor')
