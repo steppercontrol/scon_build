@@ -8,5 +8,6 @@ result
 
 # python
 
+.coverage
 python/build
 python/planer_build.egg-info
