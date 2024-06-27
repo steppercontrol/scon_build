@@ -2,6 +2,5 @@
 
 from mk_build import *
 
-gup("Calibration/all")
 gup("Planer/all")
 gup("test/all")
