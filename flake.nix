@@ -43,28 +43,35 @@
         '';
       };
 
-      shell = stdenv.mkDerivation {
-        inherit version;
+      shell = with pkgs;
+        stdenv.mkDerivation {
+          inherit version;
 
-        name = "planer_shell";
+          name = "planer_shell";
 
-        src = ./.;
+          src = ./.;
 
-        installPhase = ''
-          mkdir -p $out/bin
+          nativeBuildInputs = [ makeWrapper ];
 
-          cp $src/sh/planer $out/bin
+          installPhase = ''
+            runHook preInstall
 
-          cp -r $src/gup $out
-          cp sh/planer_set_env $out/bin
-        '';
+            mkdir -p $out/bin
 
-        postInstall = with pkgs; ''
-          wrapProgram $out/bin/planer \
-            --set GUP $src \
-            --prefix PATH : ${lib.makeBinPath [ gup ]}
-        '';
-      };
+            cp $src/sh/planer $out/bin
+
+            cp -r $src/gup $out
+            cp sh/planer_set_env $out/bin
+
+            runHook postInstall
+          '';
+
+          postInstall = ''
+            wrapProgram $out/bin/planer \
+              --set GUP $src \
+              --prefix PATH : ${lib.makeBinPath [ gup ]}
+          '';
+        };
     in {
       packages.${system}.default = with pkgs;
         symlinkJoin {
@@ -82,6 +89,10 @@
       in crossPkgs.mkShell {
         nativeBuildInputs = nativeBuildAndShellInputs;
         inputsFrom = [ inputs.dev.devShells.${system}.python ];
+
+        shellHook = ''
+          . ${shell}/bin/planer_set_env
+        '';
       };
     };
 }
