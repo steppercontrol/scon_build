@@ -56,20 +56,32 @@
           installPhase = ''
             runHook preInstall
 
+            echo pythonpath ${inputs.mk_build.packages.${system}.default}
+
             mkdir -p $out/bin
 
             cp $src/sh/planer $out/bin
 
-            cp -r $src/gup $out
+            cp -r $src/gup $out/bin
             cp sh/planer_set_env $out/bin
 
             runHook postInstall
           '';
 
-          postInstall = ''
+          ## wrapProgram $out/bin/gup/all.gup \
+          ##   --prefix PYTHONPATH : ${
+          ##     inputs.mk_build.packages.${system}.default
+          ##   }/lib/python3.11/site-packages
+          postInstall = with python.pkgs; ''
+
             wrapProgram $out/bin/planer \
               --set GUP $src \
-              --prefix PATH : ${lib.makeBinPath [ gup ]}
+              --prefix PATH : ${lib.makeBinPath [ arduino-cli gup ]} \
+              --prefix PYTHONPATH : ${pythonBuild}/lib/python3.11/site-packages \
+              --prefix PYTHONPATH : ${
+                inputs.mk_build.packages.${system}.default
+              }/lib/python3.11/site-packages \
+              --prefix PYTHONPATH : ${tomlkit}/lib/python3.11/site-packages
           '';
         };
     in {
