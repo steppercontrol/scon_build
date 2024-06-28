@@ -253,6 +253,7 @@ class Parser:
         subparser = self.subparsers.add_parser('init')
         subparser.add_argument('--shell', action='store_true')
         subparser.add_argument('--arduino-ide', action='store_true')
+        subparser.add_argument('--arduino-core', action='store_true')
         subparser.set_defaults(func=cli.init_env)
 
     def _init_monitor(self, cli) -> None:
