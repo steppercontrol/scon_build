@@ -38,10 +38,8 @@
           tomlkit
         ];
 
-        postInstall = with pkgs; ''
-          wrapProgram $out/bin/planer \
-            --set GUP ${shell} \
-            --prefix PATH : ${lib.makeBinPath [ gup ]}
+        postInstall = ''
+          mv $out/bin/planer $out/bin/planer1
         '';
       };
 
@@ -55,8 +53,16 @@
         installPhase = ''
           mkdir -p $out/bin
 
+          cp $src/sh/planer $out/bin
+
           cp -r $src/gup $out
           cp sh/planer_set_env $out/bin
+        '';
+
+        postInstall = with pkgs; ''
+          wrapProgram $out/bin/planer \
+            --set GUP $src \
+            --prefix PATH : ${lib.makeBinPath [ gup ]}
         '';
       };
     in {

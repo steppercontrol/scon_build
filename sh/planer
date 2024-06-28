@@ -1,0 +1,5 @@
+#!/bin/sh
+
+. planer_set_env
+
+planer1 "$@"
