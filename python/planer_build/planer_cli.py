@@ -73,9 +73,10 @@ class CLI:
         top_build_dir = self.config_file.top_build_dir
         top_build_dir = ensure_type(top_build_dir, Path)
 
-        # TODO get this from a known path
+        top_source_dir = self.config_file.top_source_dir
+        top_source_dir = ensure_type(top_source_dir, Path)
 
-        cfg = PlanerConfig.from_file('config.toml.default')
+        cfg = PlanerConfig.from_file(f'{top_source_dir}/config.toml.default')
 
         def _planer():
             log.debug(f'config {cfg}')
