@@ -60,10 +60,11 @@
         '';
       };
     in {
-      packages.${system}.default = pkgs.symlinkJoin {
-        name = "planer_build";
-        paths = [ pythonBuild shell ];
-      };
+      packages.${system}.default = with pkgs;
+        symlinkJoin {
+          name = "planer_build";
+          paths = [ pythonBuild shell direnv ];
+        };
 
       hydraJobs = { inherit (self) packages; };
 
