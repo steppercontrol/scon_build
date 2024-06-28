@@ -14,22 +14,29 @@ from .message import platform_build_extra_flags
 
 
 def envrc_write(build: PathInput) -> None:
-    with open('.envrc', 'r') as fi:
-        lines = fi.readlines()
+    out_line = f'export top_build_dir="{build}"\n'
+    envrc = '.envrc'
 
-    with open('.envrc', 'w') as fi:
-        out_line = f'export top_build_dir="{build}"\n'
-        replaced = False
+    try:
+        with open(envrc, 'r') as fi:
+            lines = fi.readlines()
 
-        for it in lines:
-            if not it.startswith('export top_build_dir'):
-                fi.write(it)
-            else:
+        with open(envrc, 'w') as fi:
+            out_line = f'export top_build_dir="{build}"\n'
+            replaced = False
+
+            for it in lines:
+                if not it.startswith('export top_build_dir'):
+                    fi.write(it)
+                else:
+                    fi.write(out_line)
+                    eprint(f'.envrc: replace top build dir with {build}')
+                    replaced = True
+
+            if not replaced:
                 fi.write(out_line)
-                eprint(f'.envrc: replace top build dir with {build}')
-                replaced = True
-
-        if not replaced:
+    except FileNotFoundError:
+        with open(envrc, 'w') as fi:
             fi.write(out_line)
 
 
