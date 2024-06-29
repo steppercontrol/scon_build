@@ -4,8 +4,7 @@
 import argparse
 from dataclasses import dataclass, field
 import os
-from os import remove, symlink
-from os.path import isfile, islink
+from os.path import isfile
 import sys
 
 import argcomplete
@@ -67,8 +66,6 @@ class CLI:
         self.config_file.top_source_dir = Path(source)
         self.config_file.top_build_dir = Path(build)
 
-        log.debug(f'CLI {self}')
-
     def configure(self, args) -> None:
         top_build_dir = self.config_file.top_build_dir
         top_build_dir = ensure_type(top_build_dir, Path)
@@ -79,7 +76,7 @@ class CLI:
         cfg = PlanerConfig.from_file(f'{top_source_dir}/config.toml.default')
 
         def _planer():
-            log.debug(f'config {cfg}')
+            """ Write project configuration to config.toml. """
 
             if not isdir(top_build_dir):
                 eprint(str.format(build_dir_not_found, top_build_dir))
@@ -91,6 +88,8 @@ class CLI:
             cfg.write_toml(path, 'w')
 
         def _build():
+            """ Write build configuration to config.toml. """
+
             self.config_file = BuildConfig()
 
             path = f'{self.config_file.top_build_dir}/config.toml'
@@ -101,6 +100,7 @@ class CLI:
             self.config_file.write(path, 'a')
 
         def _config_h():
+            """ Write project configuration to config.h. """
             path = f'{self.config_file.top_build_dir}/config.h'
 
             cfg.write_config_h(path)
@@ -111,7 +111,6 @@ class CLI:
 
         configure_.envrc_write(top_build_dir)
 
-        # mk_build.configure.main()
 
     def init_env(self, args) -> None:
         # detect installation
@@ -161,17 +160,11 @@ class CLI:
             if arduino_cli.core_install(f'{core}@{version}').returncode != 0:
                 raise Exception()
 
-    def monitor(self, args) -> None:
-        board = self.config.arduino.board
-        port = self.config.arduino.port
+    def build(self, args) -> CompletedProcess:
+        # TODO pass extra args to gup instead of forcing _build/all.
 
-        run([
-            'arduino-cli', 'monitor',
-            '-q',
-            '-b', board,
-            '-p', port,
-            '-v'
-        ])
+        return run(['gup', '-j', '4', '_build/all'])
+
 
     def upload(self, args) -> None:
         # arduino-cli upload $sketch -b $BOARD -p $port -v && \
@@ -189,16 +182,17 @@ class CLI:
             '-v'
         ])
 
-    def build(self, args) -> CompletedProcess:
-        gup_dir = f'{self.config_file.top_source_dir}/gup'
-        gup_src = f"{environ('GUP', required=True)}/gup"
+    def monitor(self, args) -> None:
+        board = self.config.arduino.board
+        port = self.config.arduino.port
 
-        if islink(gup_dir):
-            remove(gup_dir)
-
-        symlink(gup_src, gup_dir)
-
-        return run(['gup', '-j', '4', '_build/all'])
+        run([
+            'arduino-cli', 'monitor',
+            '-q',
+            '-b', board,
+            '-p', port,
+            '-v'
+        ])
 
 
 class Parser:

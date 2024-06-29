@@ -16,23 +16,46 @@ def compile(
     build_path,
     libraries
 ) -> CompletedProcess:
-    args = [
-        'arduino-cli', 'compile', ino_path,
+    common = _build_args(board=True, port=True, verbose=True)
+
+    return run([
+        _arduino_cli, 'compile', ino_path,
         '--optimize-for-debug',
         '--build-path', build_path,
         '--warnings', 'all',
-        '-b', _arduino_fqbn(),
         '--libraries', libraries
-    ]
-
-    if config.verbose > 0:
-        args.append('-v')
-
-    return run(args)
+    ] + common)
 
 
 def core_install(core: str) -> CompletedProcess:
     return run([_arduino_cli, 'core', 'install', core])
+
+
+def upload(path: str) -> CompletedProcess:
+    common = _build_args(board=True, port=True, verbose=True)
+
+    return run([_arduino_cli, 'upload', '--input-file', path] + common)
+
+
+def monitor() -> CompletedProcess:
+    common = _build_args(board=True, port=True)
+
+    return run([_arduino_cli, 'monitor', '-q'] + common)
+
+
+def _build_args(board=False, port=False, verbose=False) -> list[str]:
+    args = []
+
+    if board:
+        args += ['-b', _arduino_fqbn()]
+
+    if port:
+        args += ['-p', planer_config.arduino.port]
+
+    if verbose and config.verbose > 0:
+        args.append('-v')
+
+    return args
 
 
 def _arduino_fqbn() -> str:
