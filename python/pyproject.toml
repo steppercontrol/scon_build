@@ -15,6 +15,9 @@ test = [
     "pytest"
 ]
 
+[tool.setuptools.package-data]
+planer_build = ["gup/**/*.gup", "gup/**/*.py"]
+
 [project.scripts]
 planer = "planer_build.planer_cli:main"
 
