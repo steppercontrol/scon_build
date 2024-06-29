@@ -3,8 +3,11 @@
 
 import argparse
 from dataclasses import dataclass, field
+from importlib.resources import as_file, files
 import os
-from os.path import isfile
+from os import makedirs, walk
+from os.path import isdir, isfile
+import shutil
 import sys
 
 import argcomplete
@@ -105,12 +108,123 @@ class CLI:
 
             cfg.write_config_h(path)
 
+        def _gup():
+            """ Copy gup files. """
+
+            log.debug(f"source {files('planer_build.gup._build')}")
+
+            fs = files('planer_build.gup')
+
+            log.debug(f'fs {fs}')
+
+            _build = fs.joinpath('_build')
+
+            import pprint
+            import stat
+            from os import chmod
+
+            # breakpoint()
+
+            for it in walk(_build):
+                dir_name = Path(it[0]).relative_to(_build)
+
+                dir_names = it[1]
+                file_names = it[2]
+
+                pprint.pprint(it)
+
+                for d in dir_names:
+                    makedirs(Path(self.config_file.top_build_dir, d), exist_ok=True)
+
+                for name in file_names:
+                    source = Path(_build, dir_name, name)
+                    dest = Path(self.config_file.top_build_dir, dir_name)
+
+                    print(f'src {source} dest {dest}')
+
+                    shutil.copy(source, dest)
+                    # chmod(dest, stat.S_IRUSR | stat.S_IWUSR)
+
+            builders = fs.joinpath('builders')
+
+            for it in walk(builders):
+                dir_name = Path(it[0]).relative_to(builders)
+
+                dir_names = it[1]
+                file_names = it[2]
+
+                pprint.pprint(it)
+
+                for d in dir_names:
+                    makedirs(Path(self.config_file.top_build_dir, d), exist_ok=True)
+
+                dest_dir = Path(self.config_file.top_build_dir, 'builders')
+                makedirs(dest_dir, exist_ok=True)
+
+                for name in file_names:
+                    source = Path(builders, dir_name, name)
+                    dest = Path(self.config_file.top_build_dir, 'builders', dir_name)
+
+                    print(f'src {source} dest {dest}')
+
+                    shutil.copy(source, dest)
+                    # chmod(dest, stat.S_IRUSR | stat.S_IWUSR)
+
+            '''
+            shutil.copytree(
+                _build,
+                self.config_file.top_build_dir,
+                dirs_exist_ok=True
+            )
+            '''
+
+            '''
+            breakpoint()
+
+            log.debug(f'fs {fs}')
+
+            if not fs.is_file():
+                for it in fs.iterdir():
+                    if isdir(it):
+                        shutil.copytree(
+                            it,
+                            self.config_file.top_build_dir,
+                            dirs_exist_ok=True
+                        )
+                    else:
+                        shutil.copy(it, self.config_file.top_build_dir)
+            else:
+                assert False
+                with as_file(fs) as fi:
+                    log.debug(f'fi {fi}')
+
+                    shutil.copytree(
+                        fi,
+                        self.config_file.top_build_dir,
+                        dirs_exist_ok=True
+                    )
+
+            builders_dest = f'{self.config_file.top_build_dir}/builders'
+
+            makedirs(builders_dest, exist_ok=True)
+
+            fs = files('planer_build.gup.builders')
+
+            with as_file(fs) as fi:
+                shutil.copytree(
+                    fi,
+                    builders_dest,
+                    dirs_exist_ok=True
+                )
+            '''
+
         _planer()
         _build()
         _config_h()
 
         configure_.envrc_write(top_build_dir)
 
+        _gup()
 
     def init_env(self, args) -> None:
         # detect installation
@@ -165,6 +279,32 @@ class CLI:
 
         return run(['gup', '-j', '4', '_build/all'])
 
+        '''
+        if not exists('gup'):
+            gup_dir = f'{self.config_file.top_source_dir}/gup'
+            gup_src = f"{environ('GUP', required=True)}/gup"
+
+            if islink(gup_dir):
+                remove(gup_dir)
+
+            symlink(gup_src, gup_dir)
+        '''
+
+        '''
+        sys_path = ':'.join(sys.path)
+
+        python_path = sys_path + ':' + environ('PYTHONPATH')
+
+        print(f'build run {sys.path}\n{python_path}')
+
+        ppp = '/nix/store/pjvysa220hgr6rj76h31x88k1z5rdbz8-python3.11-planer_build-0.1.0/bin:/nix/store/psiil1nphwqprd8fb8842b0hwgpn3bix-wrapped-obs-studio-30.1.2/lib/obs-scripting:/home/boss/src/planer:/nix/store/7hnr99nxrd2aw6lghybqdmkckq60j6l9-python3-3.11.9/lib/python311.zip:/nix/store/7hnr99nxrd2aw6lghybqdmkckq60j6l9-python3-3.11.9/lib/python3.11:/nix/store/7hnr99nxrd2aw6lghybqdmkckq60j6l9-python3-3.11.9/lib/python3.11/lib-dynload:/nix/store/7hnr99nxrd2aw6lghybqdmkckq60j6l9-python3-3.11.9/lib/python3.11/site-packages:/nix/store/pjvysa220hgr6rj76h31x88k1z5rdbz8-python3.11-planer_build-0.1.0/lib/python3.11/site-packages:/nix/store/abnch2ab1jfh3kvlrf1fshnx4i2p7kdf-python3.11-argcomplete-3.3.0/lib/python3.11/site-packages:/nix/store/ld1g0lm87dq2jfg427b2jbxb4brrdh5y-python3.11-mk_build-0.1.0/lib/python3.11/site-packages:/nix/store/59clyj18mvjxbkig5z76m0b40pxkxkfq-python3.11-pytest-8.1.1/lib/python3.11/site-packages:/nix/store/ihj3vxwv7wn7lgpja37gjvqb55x0kx90-python3.11-iniconfig-2.0.0/lib/python3.11/site-packages:/nix/store/lwjnn5iyh8jzzhbvlqw31498mhhkmhcx-python3.11-packaging-24.0/lib/python3.11/site-packages:/nix/store/bc5iy2ky85k1v46hfs4myhd0c35i2rmi-python3.11-pluggy-1.4.0/lib/python3.11/site-packages:/nix/store/w1ar41xsp31nris574c2gl0c1vsl7hcn-python3.11-tomlkit-0.12.4/lib/python3.11/site-packages:/nix/store/g4h9138sa5wh6kkfwc7f49q169wcs8s9-python3.11-setuptools-69.5.1/lib/python3.11/site-packages:/nix/store/psiil1nphwqprd8fb8842b0hwgpn3bix-wrapped-obs-studio-30.1.2/lib/obs-scripting:/nix/store/psiil1nphwqprd8fb8842b0hwgpn3bix-wrapped-obs-studio-30.1.2/lib/obs-scripting'  # noqa
+
+        env = {
+            'PYTHONPATH': ppp
+        }
+
+        return run(['gup', '-j', '4', '_build/all'], env=env)
+        '''
 
     def upload(self, args) -> None:
         # arduino-cli upload $sketch -b $BOARD -p $port -v && \

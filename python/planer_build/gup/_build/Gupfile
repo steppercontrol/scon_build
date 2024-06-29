@@ -1,2 +1,2 @@
-../builders/arduino_bin.py:
+builders/arduino_bin.py:
     **.elf

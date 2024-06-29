@@ -62,7 +62,7 @@
 
             cp $src/sh/planer $out/bin
 
-            cp -r $src/gup $out/bin
+            # cp -r $src/gup $out/bin
             cp sh/planer_set_env $out/bin
 
             runHook postInstall
