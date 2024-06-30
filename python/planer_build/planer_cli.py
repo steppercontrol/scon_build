@@ -374,7 +374,7 @@ class Parser:
         elif args.log_level == 2:
             log.set_level('DEBUG')
 
-        log.debug(f'parsed {parsed}')
+        log.set_detail(1)
 
         cli.init(**vars(args))
 
