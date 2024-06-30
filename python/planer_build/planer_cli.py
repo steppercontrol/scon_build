@@ -5,9 +5,11 @@ import argparse
 from dataclasses import dataclass, field
 from importlib.resources import as_file, files
 import os
+from os import chmod
 from os import makedirs, walk
 from os.path import isdir, isfile
 import shutil
+from stat import S_IRUSR, S_IWUSR, S_IRGRP, S_IROTH
 import sys
 
 import argcomplete
@@ -120,10 +122,8 @@ class CLI:
             _build = fs.joinpath('_build')
 
             import pprint
-            import stat
-            from os import chmod
 
-            # breakpoint()
+            attrs = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
 
             for it in walk(_build):
                 dir_name = Path(it[0]).relative_to(_build)
@@ -139,11 +139,12 @@ class CLI:
                 for name in file_names:
                     source = Path(_build, dir_name, name)
                     dest = Path(self.config_file.top_build_dir, dir_name)
+                    dest_file = Path(dest, name)
 
                     print(f'src {source} dest {dest}')
 
                     shutil.copy(source, dest)
-                    # chmod(dest, stat.S_IRUSR | stat.S_IWUSR)
+                    chmod(dest_file, attrs)
 
             builders = fs.joinpath('builders')
 
@@ -151,7 +152,10 @@ class CLI:
                 dir_name = Path(it[0]).relative_to(builders)
 
                 dir_names = it[1]
-                file_names = it[2]
+                file_names = filter(
+                    lambda x: x == 'Gupfile' or x.endswith('.gup') or x.endswith('.py'),
+                    it[2]
+                )
 
                 pprint.pprint(it)
 
@@ -164,11 +168,13 @@ class CLI:
                 for name in file_names:
                     source = Path(builders, dir_name, name)
                     dest = Path(self.config_file.top_build_dir, 'builders', dir_name)
+                    dest_file = Path(dest, name)
 
                     print(f'src {source} dest {dest}')
 
                     shutil.copy(source, dest)
-                    # chmod(dest, stat.S_IRUSR | stat.S_IWUSR)
+
+                    chmod(dest_file, attrs)
 
             '''
             shutil.copytree(
