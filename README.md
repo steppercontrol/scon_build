@@ -1,5 +1,1 @@
-nix develop .#devShells.i386
-
-. .venv/bin/activate
-
-gup -u _build/all
+See [here](https://github.com/steppercontrol/planer_doc/wiki/Setup)
