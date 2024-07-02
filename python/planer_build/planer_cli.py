@@ -11,6 +11,7 @@ from os.path import isdir, isfile
 import shutil
 from stat import S_IRUSR, S_IWUSR, S_IRGRP, S_IROTH
 import sys
+from typing import Tuple
 
 import argcomplete
 from mk_build.config import Config as BuildConfig
@@ -21,7 +22,7 @@ from mk_build.validate import ensure_type
 
 import planer_build.configure as configure_
 from planer_build.configure import Config as PlanerConfig
-from .message import build_dir_not_found
+from .message import build_dir_bad_location, build_dir_not_found
 from .tools import arduino_cli
 
 
@@ -54,9 +55,6 @@ class CLI:
         else:
             build = environ('top_build_dir')
 
-        if build == source:
-            raise ValueError()
-
         # TODO not sure if we need this in environment
 
         os.environ['top_source_dir'] = source
@@ -71,6 +69,8 @@ class CLI:
 
         self.config_file.top_source_dir = Path(source)
         self.config_file.top_build_dir = Path(build)
+
+        self._validate_dirs()
 
     def configure(self, args) -> None:
         top_build_dir = self.config_file.top_build_dir
@@ -372,6 +372,18 @@ class CLI:
             '-v'
         ])
 
+    def _validate_dirs(self) -> Tuple[Path, Path]:
+        top_build_dir = self.config_file.top_build_dir
+        top_build_dir = ensure_type(top_build_dir, Path)
+
+        top_source_dir = self.config_file.top_source_dir
+        top_source_dir = ensure_type(top_source_dir, Path)
+
+        if top_build_dir == top_source_dir:
+            raise ValueError(build_dir_bad_location)
+
+        return (top_source_dir, top_build_dir)
+
     def _ensure_build_dir(self) -> Path:
         top_build_dir = self.config_file.top_build_dir
         return ensure_type(top_build_dir, Path)
@@ -458,6 +470,9 @@ def main() -> None:
         cli = CLI()
 
         Parser(cli)
+    except ValueError as e:
+        eprint(e)
+        sys.exit(1)
     except FatalError:
         sys.exit(1)
 
