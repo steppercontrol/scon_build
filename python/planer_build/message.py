@@ -1,5 +1,9 @@
 invalid_property = 'Configuration property "{}" has invalid type {} with value {}'
 
+arduino_ide_error_not_found = (
+'Arduino IDE installation was not detected. Tried "{}"'
+)
+
 build_dir_not_found = 'Build directory "{}" does not exist.'
 
 build_dir_bad_location = (

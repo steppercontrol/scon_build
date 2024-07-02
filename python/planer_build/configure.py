@@ -10,7 +10,8 @@ from mk_build.config import BaseConfig
 from mk_build.validate import ensure_type
 from tomlkit.items import Table
 
-from .message import platform_build_extra_flags
+from .error import FatalError
+from .message import arduino_ide_error_not_found, platform_build_extra_flags
 
 
 def envrc_write(build: PathInput) -> None:
@@ -68,8 +69,17 @@ def arduino_ide_configure(
     source: Path,
     build: Path
 ) -> None:
+    _ensure_arduino_ide()
+
     _arduino_ide_cli_configure(config, source, build)
     _arduino_ide_platform_configure(config, source, build)
+
+
+def _ensure_arduino_ide():
+    data = environ('ARDUINO_IDE_DATA', required=True)
+
+    if not exists(data):
+        raise FatalError(str.format(arduino_ide_error_not_found, data))
 
 
 def _arduino_ide_cli_configure(

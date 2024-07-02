@@ -22,15 +22,12 @@ from mk_build.validate import ensure_type
 
 import planer_build.configure as configure_
 from planer_build.configure import Config as PlanerConfig
+from .error import FatalError
 from .message import build_dir_bad_location, build_dir_not_found
 from .tools import arduino_cli
 
 
 _builders_dir = 'builders'
-
-
-class FatalError(Exception):
-    pass
 
 
 @dataclass
@@ -244,17 +241,12 @@ class CLI:
     def init_env(self, args) -> None:
         # detect installation
 
-        try:
-            self.config.environment = {
-                'arduino': environ('ARDUINO', required=True),
-                'arduino_ide': environ('ARDUINO_IDE', required=True),
-                'arduino_ide_data': environ('ARDUINO_IDE_DATA', required=True),
-                'arduino_cli': environ('ARDUINO_CLI', required=True)
-            }
-        except Exception as e:
-            eprint(e)
-
-            raise FatalError()
+        self.config.environment = {
+            'arduino': environ('ARDUINO', required=True),
+            'arduino_ide': environ('ARDUINO_IDE', required=True),
+            'arduino_ide_data': environ('ARDUINO_IDE_DATA', required=True),
+            'arduino_cli': environ('ARDUINO_CLI', required=True)
+        }
 
         if args.shell:
             configure_.shell_configure()
@@ -324,7 +316,7 @@ class CLI:
     def clean(self, args) -> None:
         """ Clean the build directory. """
 
-        build_dir = self._ensure_build_dir()
+        (_, build_dir) = self._ensure_dirs()
 
         def is_config_file(path: Path) -> bool:
             parent = path.parent.name
@@ -373,20 +365,21 @@ class CLI:
         ])
 
     def _validate_dirs(self) -> Tuple[Path, Path]:
-        top_build_dir = self.config_file.top_build_dir
-        top_build_dir = ensure_type(top_build_dir, Path)
-
-        top_source_dir = self.config_file.top_source_dir
-        top_source_dir = ensure_type(top_source_dir, Path)
+        (top_source_dir, top_build_dir) = self._ensure_dirs()
 
         if top_build_dir == top_source_dir:
             raise ValueError(build_dir_bad_location)
 
         return (top_source_dir, top_build_dir)
 
-    def _ensure_build_dir(self) -> Path:
+    def _ensure_dirs(self) -> Tuple[Path, Path]:
         top_build_dir = self.config_file.top_build_dir
-        return ensure_type(top_build_dir, Path)
+        top_build_dir = ensure_type(top_build_dir, Path)
+
+        top_source_dir = self.config_file.top_source_dir
+        top_source_dir = ensure_type(top_source_dir, Path)
+
+        return (top_source_dir, top_build_dir)
 
 
 class Parser:
@@ -470,10 +463,8 @@ def main() -> None:
         cli = CLI()
 
         Parser(cli)
-    except ValueError as e:
+    except Exception as e:
         eprint(e)
-        sys.exit(1)
-    except FatalError:
         sys.exit(1)
 
 
