@@ -393,7 +393,7 @@ class Parser:
         self._init_monitor(cli)
         self._init_upload(cli)
 
-        self.parser.add_argument('-l', '--log-level', type=int)
+        self.parser.add_argument('-l', '--log-level', type=int, default=0)
         self.parser.add_argument('--source')
         self.parser.add_argument('--build')
 
@@ -406,12 +406,15 @@ class Parser:
         # del args['func']
         args = parsed
 
+        if args.log_level == 0:
+            log.set_level('WARNING')
         if args.log_level == 1:
             log.set_level('INFO')
         elif args.log_level == 2:
             log.set_level('DEBUG')
 
-        log.set_detail(1)
+        if args.log_level >= 1:
+            log.set_detail(1)
 
         cli.init(**vars(args))
 
