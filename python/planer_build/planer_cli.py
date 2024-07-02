@@ -251,6 +251,18 @@ class CLI:
         if args.shell:
             configure_.shell_configure()
 
+        if args.arduino_core:
+            # install core for board
+
+            arduino = self.config.arduino
+            core = ensure_type(arduino.core, str)
+            version = ensure_type(arduino.version, str)
+
+            log.info(f'Install core {core}')
+
+            if arduino_cli.core_install(f'{core}@{version}').returncode != 0:
+                raise Exception()
+
         if args.arduino_ide:
             # TODO modify settings.json
 
@@ -268,18 +280,6 @@ class CLI:
                 top_source_dir,
                 top_build_dir
             )
-
-        if args.arduino_core:
-            # install core for board
-
-            arduino = self.config.arduino
-            core = ensure_type(arduino.core, str)
-            version = ensure_type(arduino.version, str)
-
-            log.info(f'Install core {core}')
-
-            if arduino_cli.core_install(f'{core}@{version}').returncode != 0:
-                raise Exception()
 
     def build(self, args) -> CompletedProcess:
         # TODO pass extra args to gup instead of forcing _build/all.
