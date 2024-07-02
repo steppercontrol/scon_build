@@ -27,6 +27,9 @@ from .message import build_dir_not_found
 from .tools import arduino_cli
 
 
+_builders_dir = 'builders'
+
+
 class FatalError(Exception):
     pass
 
@@ -146,7 +149,7 @@ class CLI:
                     shutil.copy(source, dest)
                     chmod(dest_file, attrs)
 
-            builders = fs.joinpath('builders')
+            builders = fs.joinpath(_builders_dir)
 
             for it in walk(builders):
                 dir_name = Path(it[0]).relative_to(builders)
@@ -162,12 +165,13 @@ class CLI:
                 for d in dir_names:
                     makedirs(Path(self.config_file.top_build_dir, d), exist_ok=True)
 
-                dest_dir = Path(self.config_file.top_build_dir, 'builders')
+                dest_dir = Path(self.config_file.top_build_dir, _builders_dir)
                 makedirs(dest_dir, exist_ok=True)
 
                 for name in file_names:
                     source = Path(builders, dir_name, name)
-                    dest = Path(self.config_file.top_build_dir, 'builders', dir_name)
+                    dest = Path(self.config_file.top_build_dir, _builders_dir,
+                                dir_name)
                     dest_file = Path(dest, name)
 
                     print(f'src {source} dest {dest}')
@@ -312,6 +316,29 @@ class CLI:
         return run(['gup', '-j', '4', '_build/all'], env=env)
         '''
 
+    def clean(self, args) -> None:
+        """ Clean the build directory. """
+
+        build_dir = self._ensure_build_dir()
+
+        def is_config_file(path: Path) -> bool:
+            parent = path.parent.name
+            name = path.name
+
+            return (parent == _builders_dir or name.endswith('.gup')
+                    or name == 'Gupfile' or name == 'config.h'
+                    or name == 'config.toml')
+
+        for it in walk(build_dir):
+            path = Path(it[0])
+            paths = [Path(path, x) for x in it[2]]
+
+            to_delete = list(filter(lambda x: not is_config_file(x), paths))
+            to_delete = [Path(path, x) for x in to_delete]
+
+            for jj in to_delete:
+                os.remove(jj)
+
     def upload(self, args) -> None:
         # arduino-cli upload $sketch -b $BOARD -p $port -v && \
         # arduino-cli upload --input-file $sketch -b $BOARD -p $port -v && \
@@ -340,6 +367,10 @@ class CLI:
             '-v'
         ])
 
+    def _ensure_build_dir(self) -> Path:
+        top_build_dir = self.config_file.top_build_dir
+        return ensure_type(top_build_dir, Path)
+
 
 class Parser:
     def __init__(self, cli) -> None:
@@ -353,6 +384,7 @@ class Parser:
         self._init_configure(cli)
         self._init_init_env(cli)
         self._init_build(cli)
+        self._init_clean(cli)
         self._init_monitor(cli)
         self._init_upload(cli)
 
@@ -385,6 +417,10 @@ class Parser:
     def _init_build(self, cli) -> None:
         subparser = self.subparsers.add_parser('build')
         subparser.set_defaults(func=cli.build)
+
+    def _init_clean(self, cli) -> None:
+        subparser = self.subparsers.add_parser('clean')
+        subparser.set_defaults(func=cli.clean)
 
     def _init_configure(self, cli) -> None:
         subparser = self.subparsers.add_parser('configure')
