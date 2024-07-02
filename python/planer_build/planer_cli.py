@@ -3,7 +3,7 @@
 
 import argparse
 from dataclasses import dataclass, field
-from importlib.resources import as_file, files
+from importlib.resources import files
 import os
 from os import chmod
 from os import makedirs, walk
@@ -13,12 +13,10 @@ from stat import S_IRUSR, S_IWUSR, S_IRGRP, S_IROTH
 import sys
 
 import argcomplete
-# import mk_build.configure
 from mk_build.config import Config as BuildConfig
 from mk_build import environ, eprint, Path
 
 from mk_build import CompletedProcess, log, run
-from mk_build.util import isdir
 from mk_build.validate import ensure_type
 
 import planer_build.configure as configure_
@@ -137,7 +135,10 @@ class CLI:
                 pprint.pprint(it)
 
                 for d in dir_names:
-                    makedirs(Path(self.config_file.top_build_dir, d), exist_ok=True)
+                    makedirs(
+                        Path(self.config_file.top_build_dir, d),
+                        exist_ok=True
+                    )
 
                 for name in file_names:
                     source = Path(_build, dir_name, name)
@@ -156,14 +157,18 @@ class CLI:
 
                 dir_names = it[1]
                 file_names = filter(
-                    lambda x: x == 'Gupfile' or x.endswith('.gup') or x.endswith('.py'),
+                    lambda x: (x == 'Gupfile' or x.endswith('.gup')
+                               or x.endswith('.py')),
                     it[2]
                 )
 
                 pprint.pprint(it)
 
                 for d in dir_names:
-                    makedirs(Path(self.config_file.top_build_dir, d), exist_ok=True)
+                    makedirs(
+                        Path(self.config_file.top_build_dir, d),
+                        exist_ok=True
+                    )
 
                 dest_dir = Path(self.config_file.top_build_dir, _builders_dir)
                 makedirs(dest_dir, exist_ok=True)
