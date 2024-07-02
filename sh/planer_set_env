@@ -1,6 +1,5 @@
 exit_handler() {
     if [ ! -z "$saved_options" ]; then
-        printf "opt %s\n" "$saved_options"
         eval "$saved_options"
     fi
 }
