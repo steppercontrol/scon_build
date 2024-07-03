@@ -26,6 +26,7 @@ from planer_build.configure import Config as PlanerConfig
 from .error import FatalError
 from .message import build_dir_bad_location, build_dir_not_found
 from .tools import arduino_cli
+from .util import wsl_from_win
 
 
 _builders_dir = 'builders'
@@ -82,10 +83,10 @@ class CLI:
         stdout = json.loads(result.stdout)
 
         self.config.environment = {
-            'arduino': stdout['arduino'],
-            'arduino_ide': stdout['arduino_ide'],
-            'arduino_ide_data': stdout['arduino_ide_data'],
-            'arduino_cli': stdout['arduino_cli']
+            'arduino': wsl_from_win(stdout['arduino']),
+            'arduino_ide': wsl_from_win(stdout['arduino_ide']),
+            'arduino_ide_data': wsl_from_win(stdout['arduino_ide_data']),
+            'arduino_cli': wsl_from_win(stdout['arduino_cli'])
         }
 
         log.debug(f'environment {self.config.environment}')
