@@ -4,6 +4,7 @@ from operator import itemgetter
 from mk_build import CompletedProcess, environ, run
 import mk_build.config as config_
 import planer_build.configure as planer_config_
+from ..util import win_from_wsl
 
 config = config_.get()
 planer_config = planer_config_.get()
@@ -17,6 +18,10 @@ def compile(
     libraries
 ) -> CompletedProcess:
     common = _build_args(board=True, port=True, verbose=True)
+
+    if _arduino_cli.endswith('.exe'):
+        ino_path = win_from_wsl(ino_path)
+        libraries = win_from_wsl(libraries)
 
     return run([
         _arduino_cli, 'compile', ino_path,
