@@ -297,7 +297,11 @@ class CLI:
     def build(self, args) -> CompletedProcess:
         # TODO pass extra args to gup instead of forcing _build/all.
 
-        return run(['gup', '-j', '4', '_build/all'])
+        env = {
+            'ARDUINO_CLI': self.config.environment['arduino_cli']
+        }
+
+        return run(['gup', '-j', '4', '_build/all'], env=env)
 
         '''
         if not exists('gup'):

@@ -53,7 +53,7 @@ set_env() {
         : ${ARDUINO:="$LOCALAPPDATA"'\Arduino15\packages\arduino'}
         : ${ARDUINO_IDE:="$LOCALAPPDATA"'\Programs\Arduino IDE'}
         : ${ARDUINO_IDE_DATA:="$USERPROFILE"'\.arduinoIDE'}
-        : ${ARDUINO_CLI:="$ARDUINO_IDE"'\resources\app\lib\backend\resources'}
+        : ${ARDUINO_CLI:="$ARDUINO_IDE"'\resources\app\lib\backend\resources\arduino-cli.exe'}
 
         export LOCALAPPDATA
         export USERPROFILE
