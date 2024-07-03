@@ -38,8 +38,10 @@
           tomlkit
         ];
 
-        postInstall = ''
-          mv $out/bin/planer $out/bin/planer1
+        postInstall = with pkgs; ''
+          wrapProgram $out/bin/planer \
+            --set GUP $src \
+            --prefix PATH : ${lib.makeBinPath [ arduino-cli gup ]}
         '';
       };
 
@@ -60,23 +62,12 @@
 
             mkdir -p $out/bin
 
-            cp $src/sh/planer $out/bin
-
-            # cp -r $src/gup $out/bin
             cp sh/planer_set_env $out/bin
 
             runHook postInstall
           '';
 
-          ## wrapProgram $out/bin/gup/all.gup \
-          ##   --prefix PYTHONPATH : ${
-          ##     inputs.mk_build.packages.${system}.default
-          ##   }/lib/python3.11/site-packages
           postInstall = ''
-            wrapProgram $out/bin/planer \
-              --set GUP $src \
-              --prefix PATH : ${lib.makeBinPath [ arduino-cli gup ]}
-
             wrapProgram $out/bin/planer_set_env \
               --prefix PATH : ${lib.makeBinPath [ jq ]}
           '';
