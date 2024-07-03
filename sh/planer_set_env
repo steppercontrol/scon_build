@@ -1,3 +1,8 @@
+#!/bin/sh
+
+: ${WSL:=}
+: ${POWERSHELL:=/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe}
+
 exit_handler() {
     if [ ! -z "$saved_options" ]; then
         eval "$saved_options"
@@ -5,19 +10,32 @@ exit_handler() {
 }
 
 wsl_env() {
-    var="$(powershell.exe -command \"\$env:$1\" | sed -e 's/\r//' -e 's|\|/||')"
+    var="$($POWERSHELL -command \"\$env:$1\")"
+
+    if [ "$?" -ne 0 ]; then
+        printf "error: error running powershell.exe\n" > /dev/stderr
+        return 1
+    fi
+
+    var="$(echo "$var" | sed -e 's/\r//' -e 's|\|/||')"
+
+    if [ -z "$var" ]; then
+        printf "error: error setting variable %s\n" "$1" > /dev/stderr
+        return 1
+    fi
+
     printf "%s" "$var"
 }
 
 require_var() {
     if [ -z "$2" ]; then
-        printf "error: Windows variable %s is not set\n" "$1"
+        printf "error: Windows variable %s is not set\n" "$1" > /dev/stderr
         return 1
     fi
 }
 
 set_env() {
-    if [ -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
+    if [ ! -z "$WSL" ] || [ -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
         # Running under WSL, so set the necessary environment variables.
 
         : ${LOCALAPPDATA:="$(wsl_env LOCALAPPDATA)"}
@@ -62,6 +80,14 @@ saved_options="$(set +o | tr '\n' ';')"
 
 set -u
 
-set_env
+if ! set_env; then
+    exit 1
+fi
+
+jq -n --arg arduino "$ARDUINO" \
+    --arg arduino_ide "$ARDUINO_IDE" \
+    --arg arduino_ide_data "$ARDUINO_IDE_DATA" \
+    --arg arduino_cli "$ARDUINO_CLI" \
+    '{"arduino": $arduino, "arduino_ide": $arduino_ide, "arduino_ide_data": $arduino_ide_data, "arduino_cli": $arduino_cli}'
 
 exit_handler

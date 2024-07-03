@@ -4,6 +4,7 @@
 import argparse
 from dataclasses import dataclass, field
 from importlib.resources import files
+import json
 import os
 from os import chmod
 from os import makedirs, walk
@@ -68,6 +69,26 @@ class CLI:
         self.config_file.top_build_dir = Path(build)
 
         self._validate_dirs()
+
+        # Determine paths for Arduino installation.
+
+        if 'wsl' in kwargs and kwargs['wsl']:
+            env = {'WSL': 'y'}
+        else:
+            env = {}
+
+        result = run(['planer_set_env'], env=env, capture_output=True)
+
+        stdout = json.loads(result.stdout)
+
+        self.config.environment = {
+            'arduino': stdout['arduino'],
+            'arduino_ide': stdout['arduino_ide'],
+            'arduino_ide_data': stdout['arduino_ide_data'],
+            'arduino_cli': stdout['arduino_cli']
+        }
+
+        log.debug(f'environment {self.config.environment}')
 
     def configure(self, args) -> None:
         top_build_dir = self.config_file.top_build_dir
@@ -239,15 +260,6 @@ class CLI:
         _gup()
 
     def init_env(self, args) -> None:
-        # detect installation
-
-        self.config.environment = {
-            'arduino': environ('ARDUINO', required=True),
-            'arduino_ide': environ('ARDUINO_IDE', required=True),
-            'arduino_ide_data': environ('ARDUINO_IDE_DATA', required=True),
-            'arduino_cli': environ('ARDUINO_CLI', required=True)
-        }
-
         if args.shell:
             configure_.shell_configure()
 
@@ -401,6 +413,7 @@ class Parser:
         self.parser.add_argument('-l', '--log-level', type=int, default=0)
         self.parser.add_argument('--source')
         self.parser.add_argument('--build')
+        self.parser.add_argument('--wsl', action='store_true')
 
         argcomplete.autocomplete(self.parser)
 

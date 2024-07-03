@@ -72,11 +72,13 @@
           ##   --prefix PYTHONPATH : ${
           ##     inputs.mk_build.packages.${system}.default
           ##   }/lib/python3.11/site-packages
-          postInstall = with python.pkgs; ''
-
+          postInstall = ''
             wrapProgram $out/bin/planer \
               --set GUP $src \
               --prefix PATH : ${lib.makeBinPath [ arduino-cli gup ]}
+
+            wrapProgram $out/bin/planer_set_env \
+              --prefix PATH : ${lib.makeBinPath [ jq ]}
           '';
         };
     in {
@@ -96,10 +98,6 @@
       in crossPkgs.mkShell {
         nativeBuildInputs = nativeBuildAndShellInputs;
         inputsFrom = [ inputs.dev.devShells.${system}.python ];
-
-        shellHook = ''
-          . ${shell}/bin/planer_set_env
-        '';
       };
     };
 }
