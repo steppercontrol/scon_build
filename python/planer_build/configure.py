@@ -69,14 +69,14 @@ def arduino_ide_configure(
     source: Path,
     build: Path
 ) -> None:
-    _ensure_arduino_ide()
+    _ensure_arduino_ide(config)
 
     _arduino_ide_cli_configure(config, source, build)
     _arduino_ide_platform_configure(config, source, build)
 
 
-def _ensure_arduino_ide():
-    data = environ('ARDUINO_IDE_DATA', required=True)
+def _ensure_arduino_ide(config: 'Config'):
+    data = config.environment['arduino_ide_data']
 
     if not exists(data):
         raise FatalError(str.format(arduino_ide_error_not_found, data))
@@ -87,7 +87,7 @@ def _arduino_ide_cli_configure(
     source: Path,
     build: Path
 ) -> None:
-    data = environ('ARDUINO_IDE_DATA', required=True)
+    data = config.environment['arduino_ide_data']
     path = f'{data}/arduino-cli.yaml'
 
     with open(path, 'r') as fi:
