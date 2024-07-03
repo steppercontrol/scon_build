@@ -124,7 +124,13 @@ def _arduino_ide_platform_configure(
     source: Path,
     build: Path
 ) -> None:
+    from mk_build.util import system
+    from .util import win_from_wsl
+
     platform_path = path(_arduino_core_path(config), 'platform.local.txt')
+
+    if system() == 'wsl':
+        build = win_from_wsl(build)
 
     # flags for master branch
     flags = f'-I{build} -DU8G2_USE_DYNAMIC_ALLOC'
