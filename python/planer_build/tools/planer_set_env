@@ -1,0 +1,93 @@
+#!/bin/sh
+
+: ${WSL:=}
+: ${POWERSHELL:=/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe}
+
+exit_handler() {
+    if [ ! -z "$saved_options" ]; then
+        eval "$saved_options"
+    fi
+}
+
+wsl_env() {
+    var="$($POWERSHELL -command \"\$env:$1\")"
+
+    if [ "$?" -ne 0 ]; then
+        printf "error: error running powershell.exe\n" > /dev/stderr
+        return 1
+    fi
+
+    var="$(echo "$var" | sed -e 's/\r//' -e 's|\|/||')"
+
+    if [ -z "$var" ]; then
+        printf "error: error setting variable %s\n" "$1" > /dev/stderr
+        return 1
+    fi
+
+    printf "%s" "$var"
+}
+
+require_var() {
+    if [ -z "$2" ]; then
+        printf "error: Windows variable %s is not set\n" "$1" > /dev/stderr
+        return 1
+    fi
+}
+
+set_env() {
+    if [ ! -z "$WSL" ] || [ -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
+        # Running under WSL, so set the necessary environment variables.
+
+        : ${LOCALAPPDATA:="$(wsl_env LOCALAPPDATA)"}
+
+        require_var LOCALAPPDATA "$LOCALAPPDATA" || return 1
+
+        : ${USERPROFILE:="$(wsl_env USERPROFILE)"}
+
+        require_var USERPROFILE "$USERPROFILE" || return 1
+
+        : ${USERNAME:="$(wsl_env USERNAME)"}
+
+        require_var USERNAME "$USERNAME" || return 1
+
+        : ${ARDUINO:="$LOCALAPPDATA"'\Arduino15\packages\arduino'}
+        : ${ARDUINO_IDE:="$LOCALAPPDATA"'\Programs\Arduino IDE'}
+        : ${ARDUINO_IDE_DATA:="$USERPROFILE"'\.arduinoIDE'}
+        : ${ARDUINO_CLI:="$ARDUINO_IDE"'\resources\app\lib\backend\resources\arduino-cli.exe'}
+
+        export LOCALAPPDATA
+        export USERPROFILE
+        export USERNAME
+    else
+        : ${ARDUINO:="$HOME/.arduino15/packages/arduino"}
+        : ${ARDUINO_IDE:=arduino-ide}
+        : ${ARDUINO_IDE_DATA:="$HOME/.arduinoIDE"}
+        : ${ARDUINO_CLI=arduino-cli}
+    fi
+
+    require_var ARDUINO "$ARDUINO_IDE" || return 1
+    require_var ARDUINO_IDE "$ARDUINO_IDE" || return 1
+    require_var ARDUINO_IDE_DATA "$ARDUINO_IDE_DATA" || return 1
+    require_var ARDUINO_CLI "$ARDUINO_CLI" || return 1
+
+    export ARDUINO
+    export ARDUINO_IDE
+    export ARDUINO_IDE_DATA
+    export ARDUINO_CLI
+}
+
+saved_options="$(set +o | tr '\n' ';')"
+
+set -u
+
+if ! set_env; then
+    exit 1
+fi
+
+jq -n --arg arduino "$ARDUINO" \
+    --arg arduino_ide "$ARDUINO_IDE" \
+    --arg arduino_ide_data "$ARDUINO_IDE_DATA" \
+    --arg arduino_cli "$ARDUINO_CLI" \
+    '{"arduino": $arduino, "arduino_ide": $arduino_ide, "arduino_ide_data": $arduino_ide_data, "arduino_cli": $arduino_cli}'
+
+exit_handler
