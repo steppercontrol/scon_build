@@ -1,8 +1,8 @@
 {
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
-    mk_build.url = "git+http://git/mk_build.git?ref=develop";
-    dev.url = "git+http://git/mkpkgs/dev/dev.git";
+    mk_build.url = "github:fmahnke/mk_build?ref=develop";
+    dev.url = "github:fmahnke/mkpkgs-dev";
   };
 
   outputs = { self, ... }@inputs:

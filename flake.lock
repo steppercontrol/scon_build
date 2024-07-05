@@ -7,15 +7,15 @@
       "locked": {
         "lastModified": 1718916099,
         "narHash": "sha256-OUieD+oTGUMOHkXByxyaNzJ4Pav+bXMF3PRiSVQ7CDU=",
-        "ref": "refs/heads/master",
+        "owner": "fmahnke",
+        "repo": "mkpkgs-dev",
         "rev": "499a693e2cdf4c78caffc0cd17b2784aa1e9ef89",
-        "revCount": 6,
-        "type": "git",
-        "url": "http://git/mkpkgs/dev/dev.git"
+        "type": "github"
       },
       "original": {
-        "type": "git",
-        "url": "http://git/mkpkgs/dev/dev.git"
+        "owner": "fmahnke",
+        "repo": "mkpkgs-dev",
+        "type": "github"
       }
     },
     "mk_build": {
@@ -23,18 +23,18 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1720203310,
-        "narHash": "sha256-jDvnDCAxwF8fhImVamnxxS/0tjq7JKAwE+BGoPZdoN8=",
-        "ref": "develop",
-        "rev": "85d4386410bc44c2496acd7f11647ff09997b6f6",
-        "revCount": 99,
-        "type": "git",
-        "url": "http://git/mk_build.git"
+        "lastModified": 1720220470,
+        "narHash": "sha256-vK/ZaQBGi5FSn2/QawVsle7CtJuKx3VaCwQ51CnrUww=",
+        "owner": "fmahnke",
+        "repo": "mk_build",
+        "rev": "78aa3778754f486411628a9dbaa4015f181f57ff",
+        "type": "github"
       },
       "original": {
+        "owner": "fmahnke",
         "ref": "develop",
-        "type": "git",
-        "url": "http://git/mk_build.git"
+        "repo": "mk_build",
+        "type": "github"
       }
     },
     "nixpkgs": {
@@ -53,11 +53,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1719506693,
-        "narHash": "sha256-C8e9S7RzshSdHB7L+v9I51af1gDM5unhJ2xO1ywxNH8=",
+        "lastModified": 1719848872,
+        "narHash": "sha256-H3+EC5cYuq+gQW8y0lSrrDZfH71LB4DAf+TDFyvwCNA=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "b2852eb9365c6de48ffb0dc2c9562591f652242a",
+        "rev": "00d80d13810dbfea8ab4ed1009b09100cca86ba8",
         "type": "github"
       },
       "original": {
