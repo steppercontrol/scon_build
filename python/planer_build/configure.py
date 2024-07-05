@@ -6,12 +6,13 @@ from os.path import exists
 from typing import Optional
 
 from mk_build import log, environ, eprint, path, Path, PathInput
-from mk_build.config import BaseConfig
+from mk_build.config import BaseConfig, Config as BuildConfig
 from mk_build.validate import ensure_type
 from tomlkit.items import Table
 
 from .error import FatalError
 from .message import arduino_ide_error_not_found, platform_build_extra_flags
+from .util import win_from_wsl
 
 
 def envrc_write(build: PathInput) -> None:
@@ -66,13 +67,14 @@ def shell_configure() -> None:
 
 def arduino_ide_configure(
     config: 'Config',
+    build_config: BuildConfig,
     source: Path,
     build: Path
 ) -> None:
     _ensure_arduino_ide(config)
 
     _arduino_ide_cli_configure(config, source, build)
-    _arduino_ide_platform_configure(config, source, build)
+    _arduino_ide_platform_configure(config, build_config, source, build)
 
 
 def _ensure_arduino_ide(config: 'Config'):
@@ -121,15 +123,13 @@ def _arduino_ide_cli_configure(
 
 def _arduino_ide_platform_configure(
     config: 'Config',
+    build_config: BuildConfig,
     source: Path,
     build: Path
 ) -> None:
-    from mk_build.util import system
-    from .util import win_from_wsl
-
     platform_path = path(_arduino_core_path(config), 'platform.local.txt')
 
-    if system() == 'wsl':
+    if build_config.system.build.system == 'wsl':
         build = win_from_wsl(build)
 
     # flags for master branch

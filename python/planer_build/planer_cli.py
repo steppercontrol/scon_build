@@ -85,12 +85,14 @@ class CLI:
 
         stdout = json.loads(result.stdout)
 
-        self.config.environment = {
-            'arduino': wsl_from_win(stdout['arduino']),
-            'arduino_ide': wsl_from_win(stdout['arduino_ide']),
-            'arduino_ide_data': wsl_from_win(stdout['arduino_ide_data']),
-            'arduino_cli': wsl_from_win(stdout['arduino_cli'])
-        }
+        if self.config_file.system.build.system == 'wsl':
+            stdout['arduino'] = wsl_from_win(stdout['arduino'])
+            stdout['arduino_ide'] = wsl_from_win(stdout['arduino_ide'])
+            stdout['arduino_ide_data'] = wsl_from_win(
+                stdout['arduino_ide_data'])
+            stdout['arduino_cli'] = wsl_from_win(stdout['arduino_cli'])
+
+        self.config.environment = stdout
 
         log.debug(f'environment {self.config.environment}')
 
@@ -287,6 +289,7 @@ class CLI:
 
             configure_.arduino_ide_configure(
                 self.config,
+                self.config_file,
                 top_source_dir,
                 top_build_dir
             )
