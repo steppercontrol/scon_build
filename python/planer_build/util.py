@@ -1,3 +1,4 @@
+from os.path import realpath
 from pathlib import Path
 
 
@@ -5,11 +6,11 @@ def win_from_wsl(path):
     """ Convert an absolute path on a WSL system into the corresponding
         Windows path. """
 
-    path = str(path)
+    path = realpath(str(path))
 
     if not path.startswith('/mnt'):
-        raise Exception('path is expected to be an absolute path on a WSL'
-                        ' installation')
+        raise Exception(f'path is expected to be an absolute path on a WSL'
+                        f' installation: {path}')
 
     parts = path.split('/')
 
