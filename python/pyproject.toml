@@ -17,7 +17,8 @@ test = [
 ]
 
 [tool.setuptools.package-data]
-planer_build = ["gup/**/*.gup", "gup/**/*.py", "gup/**/Gupfile"]
+planer_build = ["gup/**/*.gup", "gup/**/*.py", "gup/**/Gupfile",
+    "tools/planer_set_env"]
 
 [project.scripts]
 planer = "planer_build.planer_cli:main"

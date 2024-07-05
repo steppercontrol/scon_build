@@ -19,7 +19,12 @@
         (pkgs.python3.withPackages
           (python-pkgs: with python-pkgs; [ argcomplete ]));
 
-      nativeBuildAndShellInputs = with pkgs; [ arduino-cli gup pythonTools ];
+      nativeBuildAndShellInputs = with pkgs; [
+        arduino-cli
+        gup
+        jq # for planer_set_env
+        pythonTools
+      ];
 
       version = "0.1.0";
 

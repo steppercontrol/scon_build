@@ -90,4 +90,9 @@ jq -n --arg arduino "$ARDUINO" \
     --arg arduino_cli "$ARDUINO_CLI" \
     '{"arduino": $arduino, "arduino_ide": $arduino_ide, "arduino_ide_data": $arduino_ide_data, "arduino_cli": $arduino_cli}'
 
+if [ "$?" -ne 0 ]; then
+    printf "error: error running jq\n"
+    exit 1
+fi
+
 exit_handler

@@ -15,6 +15,7 @@ import sys
 from typing import Tuple
 
 import argcomplete
+import mk_build
 from mk_build.config import Config as BuildConfig
 from mk_build import environ, eprint, Path
 
@@ -78,7 +79,9 @@ class CLI:
         else:
             env = {}
 
-        result = run(['planer_set_env'], env=env, capture_output=True)
+        set_env = mk_build.path(files('planer_build.tools'), 'planer_set_env')
+
+        result = run([set_env], env=env, capture_output=True)
 
         stdout = json.loads(result.stdout)
 
