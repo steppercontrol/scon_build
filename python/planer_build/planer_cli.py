@@ -478,7 +478,10 @@ def main() -> None:
         cli = CLI()
 
         Parser(cli)
-    except Exception as e:
+    except ValueError as e:
+        eprint(e)
+        sys.exit(1)
+    except FatalError as e:
         eprint(e)
         sys.exit(1)
 
