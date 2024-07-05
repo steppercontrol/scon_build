@@ -144,8 +144,6 @@ class CLI:
 
             _build = fs.joinpath('_build')
 
-            import pprint
-
             attrs = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
 
             for it in walk(_build):
@@ -153,8 +151,6 @@ class CLI:
 
                 dir_names = it[1]
                 file_names = it[2]
-
-                pprint.pprint(it)
 
                 for d in dir_names:
                     makedirs(
@@ -167,7 +163,7 @@ class CLI:
                     dest = Path(self.config_file.top_build_dir, dir_name)
                     dest_file = Path(dest, name)
 
-                    print(f'src {source} dest {dest}')
+                    # print(f'src {source} dest {dest}')
 
                     shutil.copy(source, dest)
                     chmod(dest_file, attrs)
@@ -184,8 +180,6 @@ class CLI:
                     it[2]
                 )
 
-                pprint.pprint(it)
-
                 for d in dir_names:
                     makedirs(
                         Path(self.config_file.top_build_dir, d),
@@ -201,7 +195,7 @@ class CLI:
                                 dir_name)
                     dest_file = Path(dest, name)
 
-                    print(f'src {source} dest {dest}')
+                    # print(f'src {source} dest {dest}')
 
                     shutil.copy(source, dest)
 
