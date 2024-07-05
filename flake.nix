@@ -86,9 +86,14 @@
           localSystem = system;
           crossSystem = { config = "avr"; };
         };
-      in crossPkgs.mkShell {
-        nativeBuildInputs = nativeBuildAndShellInputs;
+      in with pkgs;
+      crossPkgs.mkShell {
+        nativeBuildInputs = nativeBuildAndShellInputs ++ [ direnv ];
         inputsFrom = [ inputs.dev.devShells.${system}.python ];
+
+        shellHook = ''
+          eval "$(${direnv}/bin/direnv hook bash)"
+        '';
       };
     };
 }
