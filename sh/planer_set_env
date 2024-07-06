@@ -51,7 +51,9 @@ set_env() {
         require_var USERNAME "$USERNAME" || return 1
 
         : ${ARDUINO:="$LOCALAPPDATA"'\Arduino15\packages\arduino'}
-        : ${ARDUINO_IDE:="$LOCALAPPDATA"'\Programs\Arduino IDE'}
+        # TODO fix path for all users/local user install
+        # : ${ARDUINO_IDE:="$LOCALAPPDATA"'\Programs\Arduino IDE'}
+        : ${ARDUINO_IDE:='C:\Program Files\Arduino IDE'}
         : ${ARDUINO_IDE_DATA:="$USERPROFILE"'\.arduinoIDE'}
         : ${ARDUINO_CLI:="$ARDUINO_IDE"'\resources\app\lib\backend\resources\arduino-cli.exe'}
 
