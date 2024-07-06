@@ -46,7 +46,7 @@
         postInstall = with pkgs; ''
           wrapProgram $out/bin/scon \
             --set GUP $src \
-            --prefix PATH : ${lib.makeBinPath [ arduino-cli gup ]}
+            --prefix PATH : ${lib.makeBinPath [ arduino-cli gup jq ]}
         '';
       };
 
