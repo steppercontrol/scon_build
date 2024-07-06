@@ -44,7 +44,7 @@
         ];
 
         postInstall = with pkgs; ''
-          wrapProgram $out/bin/planer \
+          wrapProgram $out/bin/scon \
             --set GUP $src \
             --prefix PATH : ${lib.makeBinPath [ arduino-cli gup ]}
         '';

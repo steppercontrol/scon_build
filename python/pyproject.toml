@@ -21,7 +21,7 @@ planer_build = ["gup/**/*.gup", "gup/**/*.py", "gup/**/Gupfile",
     "tools/planer_set_env"]
 
 [project.scripts]
-planer = "planer_build.planer_cli:main"
+scon = "planer_build.planer_cli:main"
 
 [tool.coverage.run]
 source = [ "planer_build" ]
