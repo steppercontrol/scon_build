@@ -121,6 +121,8 @@ def _arduino_ide_cli_configure(
             )
 
 
+# TODO correctly write windows path for sketchbook location.
+
 def _arduino_ide_platform_configure(
     config: 'Config',
     build_config: BuildConfig,
