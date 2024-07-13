@@ -2,5 +2,4 @@
 
 from mk_build import *
 
-gup("display/st7789-2in-240x320/st7789-2in-240x320.ino.elf")
-gup("input/Keypad/Keypad.ino.elf")
+gup("motor/motor.ino.elf")

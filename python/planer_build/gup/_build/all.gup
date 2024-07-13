@@ -3,3 +3,4 @@
 from mk_build import *
 
 gup("Planer/all")
+gup("test/all")
