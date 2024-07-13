@@ -20,6 +20,8 @@ class ArduinoBin(Target):
     def update(self) -> None:
         super().update()
 
+        Path(self.sources[0]).touch()
+
         arduino_cli.compile(self.sources[0], build_dir(), self.libraries)
 
 
