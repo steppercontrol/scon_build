@@ -182,6 +182,8 @@ class Config(BaseConfig):
         board: Optional[str] = None
         port: Optional[str] = None
 
+    log_level: str = 'WARNING'
+
     arduino: Arduino = field(default_factory=Arduino)
     environment: dict = field(default_factory=dict)
 
@@ -193,6 +195,8 @@ class Config(BaseConfig):
         ctx._init_from_file(path)
 
         log.debug(f'config {ctx.config}')
+
+        ctx.log_level = ensure_type(ctx.config.get('log_level'), str)
 
         arduino = ensure_type(ctx.config.get('arduino'), Table)
 
@@ -207,6 +211,12 @@ class Config(BaseConfig):
 
     def write_config_h(self, path: str) -> None:
         toml = self.config
+
+        log_level_item = f"LOG_{ensure_type(toml['log_level'], str)}"
+
+        log = string.Template(_config['log']).substitute(
+            {'log_level': log_level_item})
+
         t = ensure_type(toml['keypad'], Table)
 
         subs: dict[str, str | int] = {
@@ -246,6 +256,7 @@ class Config(BaseConfig):
         display = string.Template(_config['display']).substitute(subs)
 
         template = string.Template(_config['full']).substitute(
+            log=log,
             keypad=keypad,
             motor=motor,
             display=display
@@ -277,6 +288,11 @@ class Config(BaseConfig):
 
 
 _config = {
+    'log': """
+static struct LogConfig logConfig = {
+    .level = ${log_level}
+};
+    """,
     'keypad': """
 static struct KeypadConfig keypadConfig = {
     .rowPins = ${row_pins},
@@ -307,7 +323,11 @@ static struct DisplayConfig displayConfig = {
 #include "input.h"
 #include "motor.h"
 #include "display.h"
+#include "util.h"
 
+
+/// Log
+${log}
 /// Input
 ${keypad}
 /// Motor
