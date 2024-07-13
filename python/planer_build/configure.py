@@ -228,7 +228,15 @@ class Config(BaseConfig):
 
         t = ensure_type(toml['motor'], Table)
 
+        driver = ensure_type(t['driver'], str)
+
+        if driver == "driver":
+            driver = "motor::Driver"
+        elif driver == "full4wire":
+            driver = "motor::Full4Wire"
+
         subs = {
+            'driver': driver,
             'steps_per_revolution': ensure_type(
                 t['steps_per_revolution'],
                 int
@@ -301,6 +309,7 @@ static struct KeypadConfig keypadConfig = {
     """,
     'motor': """
 static struct MotorConfig motorConfig = {
+    .driver = ${driver},
     .stepsPerRevolution = ${steps_per_revolution},
     .pins = ${pins}
 };
@@ -324,7 +333,6 @@ static struct DisplayConfig displayConfig = {
 #include "motor.h"
 #include "display.h"
 #include "util.h"
-
 
 /// Log
 ${log}
