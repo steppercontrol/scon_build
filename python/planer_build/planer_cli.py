@@ -103,7 +103,12 @@ class CLI:
         top_source_dir = self.config_file.top_source_dir
         top_source_dir = ensure_type(top_source_dir, Path)
 
-        cfg = PlanerConfig.from_file(f'{top_source_dir}/config.toml.default')
+        if args.config is None:
+            scon_config = f'{top_source_dir}/config.toml.default'
+        else:
+            scon_config = f'{args.config}'
+
+        cfg = PlanerConfig.from_file(scon_config)
 
         def _planer():
             """ Write project configuration to config.toml. """
@@ -437,6 +442,7 @@ class Parser:
 
     def _init_configure(self, cli) -> None:
         subparser = self.subparsers.add_parser('configure')
+        subparser.add_argument('--config', type=str)
         subparser.set_defaults(func=cli.configure)
 
     def _init_init_env(self, cli) -> None:
