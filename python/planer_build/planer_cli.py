@@ -358,28 +358,10 @@ class CLI:
         # arduino-cli upload --input-file $sketch -b $BOARD -p $port -v && \
         # arduino-cli monitor -q --raw -b $BOARD -p $port -c baudrate=115200
 
-        board = self.config.arduino.board
-        port = self.config.arduino.port
-
-        run([
-            'arduino-cli', 'upload',
-            '--input-file', args.filename,
-            '-b', board,
-            '-p', port,
-            '-v'
-        ])
+        arduino_cli.upload(args.filename)
 
     def monitor(self, args) -> None:
-        board = self.config.arduino.board
-        port = self.config.arduino.port
-
-        run([
-            'arduino-cli', 'monitor',
-            '-q',
-            '-b', board,
-            '-p', port,
-            '-v'
-        ])
+        arduino_cli.monitor()
 
     def _validate_dirs(self) -> Tuple[Path, Path]:
         (top_source_dir, top_build_dir) = self._ensure_dirs()

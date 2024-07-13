@@ -45,7 +45,8 @@ def upload(path: str) -> CompletedProcess:
 def monitor() -> CompletedProcess:
     common = _build_args(board=True, port=True)
 
-    return run([_arduino_cli, 'monitor', '-q'] + common)
+    return run([_arduino_cli, 'monitor', '-q', '-c', 'baudrate=115200']
+               + common)
 
 
 def _build_args(board=False, port=False, verbose=False) -> list[str]:
