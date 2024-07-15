@@ -1,5 +1,8 @@
 from os.path import realpath
-from pathlib import Path
+
+from mk_build import Path
+
+wsl_drive = 'Z'
 
 
 def win_from_wsl(path):
@@ -8,13 +11,12 @@ def win_from_wsl(path):
 
     path = realpath(str(path))
 
-    if not path.startswith('/mnt'):
-        raise Exception(f'path is expected to be an absolute path on a WSL'
-                        f' installation: {path}')
+    if path.startswith('/mnt'):
+        parts = path.split('/')
 
-    parts = path.split('/')
-
-    return Path(f'{parts[2]}:/{"/".join(parts[3:])}')
+        return Path(f'{parts[2]}:/{"/".join(parts[3:])}')
+    else:
+        return '/'.join([f'{wsl_drive}:', path])
 
 
 def wsl_from_win(path):
