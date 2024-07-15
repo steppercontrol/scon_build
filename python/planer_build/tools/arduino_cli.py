@@ -9,8 +9,6 @@ from ..util import win_from_wsl
 config = config_.get()
 planer_config = planer_config_.get()
 
-_arduino_cli = environ('ARDUINO_CLI', 'arduino-cli')
-
 
 def compile(
     ino_path,
@@ -19,12 +17,15 @@ def compile(
 ) -> CompletedProcess:
     common = _build_args(board=True, port=True, verbose=True)
 
-    if _arduino_cli.endswith('.exe'):
+    arduino_cli = _arduino_cli()
+
+    if arduino_cli.endswith('.exe'):
         ino_path = win_from_wsl(ino_path)
         libraries = win_from_wsl(libraries)
+        build_path = win_from_wsl(build_path)
 
     return run([
-        _arduino_cli, 'compile', ino_path,
+        arduino_cli, 'compile', ino_path,
         '--optimize-for-debug',
         '--build-path', build_path,
         '--warnings', 'all',
@@ -33,19 +34,19 @@ def compile(
 
 
 def core_install(core: str) -> CompletedProcess:
-    return run([_arduino_cli, 'core', 'install', core])
+    return run([_arduino_cli(), 'core', 'install', core])
 
 
 def upload(path: str) -> CompletedProcess:
     common = _build_args(board=True, port=True, verbose=True)
 
-    return run([_arduino_cli, 'upload', '--input-file', path] + common)
+    return run([_arduino_cli(), 'upload', '--input-file', path] + common)
 
 
 def monitor() -> CompletedProcess:
     common = _build_args(board=True, port=True)
 
-    return run([_arduino_cli, 'monitor', '-q', '-c', 'baudrate=115200']
+    return run([_arduino_cli(), 'monitor', '-q', '-c', 'baudrate=115200']
                + common)
 
 
@@ -62,6 +63,10 @@ def _build_args(board=False, port=False, verbose=False) -> list[str]:
         args.append('-v')
 
     return args
+
+
+def _arduino_cli() -> str:
+    return environ('ARDUINO_CLI', 'arduino-cli')
 
 
 def _arduino_fqbn() -> str:

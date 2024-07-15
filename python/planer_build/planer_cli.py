@@ -74,27 +74,7 @@ class CLI:
 
         # Determine paths for Arduino installation.
 
-        if 'wsl' in kwargs and kwargs['wsl']:
-            env = {'WSL': 'y'}
-        else:
-            env = {}
-
-        set_env = mk_build.path(files('planer_build.tools'), 'planer_set_env')
-
-        result = run([set_env], env=env, capture_output=True)
-
-        stdout = json.loads(result.stdout)
-
-        if self.config_file.system.build.system == 'wsl':
-            stdout['arduino'] = wsl_from_win(stdout['arduino'])
-            stdout['arduino_ide'] = wsl_from_win(stdout['arduino_ide'])
-            stdout['arduino_ide_data'] = wsl_from_win(
-                stdout['arduino_ide_data'])
-            stdout['arduino_cli'] = wsl_from_win(stdout['arduino_cli'])
-
-        self.config.environment = stdout
-
-        log.debug(f'environment {self.config.environment}')
+        self._environment_import(**kwargs)
 
     def configure(self, args) -> None:
         top_build_dir = self.config_file.top_build_dir
@@ -384,6 +364,35 @@ class CLI:
         top_source_dir = ensure_type(top_source_dir, Path)
 
         return (top_source_dir, top_build_dir)
+
+    def _environment_import(self, **kwargs) -> None:
+        if 'wsl' in kwargs and kwargs['wsl']:
+            env = {'WSL': 'y'}
+        else:
+            env = {}
+
+        set_env = mk_build.path(files('planer_build.tools'), 'planer_set_env')
+
+        result = run([set_env], env=env, capture_output=True)
+
+        stdout = json.loads(result.stdout)
+
+        if self.config_file.system.build.system == 'wsl':
+            os.environ['ARDUINO_IDE'] = wsl_from_win(stdout['arduino_ide'])
+            os.environ['ARDUINO_CLI'] = wsl_from_win(stdout['arduino_cli'])
+
+            stdout['arduino'] = wsl_from_win(stdout['arduino'])
+            stdout['arduino_ide'] = wsl_from_win(stdout['arduino_ide'])
+            stdout['arduino_ide_data'] = wsl_from_win(
+                stdout['arduino_ide_data'])
+            stdout['arduino_cli'] = wsl_from_win(stdout['arduino_cli'])
+        else:
+            os.environ['ARDUINO_IDE'] = stdout['arduino_ide']
+            os.environ['ARDUINO_CLI'] = stdout['arduino_cli']
+
+        self.config.environment = stdout
+
+        log.debug(f'environment {self.config.environment}')
 
 
 class Parser:
