@@ -169,7 +169,7 @@ def _arduino_core_path(config) -> Path:
     return Path(f"{config.environment['arduino']}/hardware/{arch}/{version}")
 
 
-def _arduino_arch(core) -> str:
+def _arduino_arch(core: str) -> str:
     return core[core.find(':') + 1:]
 
 
@@ -185,7 +185,7 @@ class Config(BaseConfig):
     log_level: str = 'WARNING'
 
     arduino: Arduino = field(default_factory=Arduino)
-    environment: dict = field(default_factory=dict)
+    environment: dict[str, str] = field(default_factory=dict)
 
     @classmethod
     def from_file(cls, path: str) -> 'Config':

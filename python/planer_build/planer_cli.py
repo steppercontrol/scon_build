@@ -37,7 +37,7 @@ _builders_dir = 'builders'
 class CLI:
     config: PlanerConfig = field(default_factory=PlanerConfig)
     config_file: BuildConfig = field(default_factory=BuildConfig)
-    environment: dict = field(default_factory=dict)
+    environment: dict[str, str] = field(default_factory=dict)
 
     def init(self, **kwargs) -> None:
         self._init_log(kwargs['log_level'])
@@ -281,7 +281,7 @@ class CLI:
                 top_build_dir
             )
 
-    def build(self, args) -> CompletedProcess:
+    def build(self, args) -> CompletedProcess[bytes]:
         # TODO pass extra args to gup instead of forcing _build/all.
 
         env = {

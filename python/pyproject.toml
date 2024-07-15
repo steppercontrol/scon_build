@@ -41,10 +41,6 @@ module = [
 ]
 disable_error_code = [
     "attr-defined",
-    "comparison-overlap",
-    "list-item",
-    "no-any-return",
-    "type-arg"
 ]
 disallow_untyped_calls = false
 disallow_incomplete_defs = false

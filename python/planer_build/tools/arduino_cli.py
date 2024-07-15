@@ -14,7 +14,7 @@ def compile(
     ino_path,
     build_path,
     libraries
-) -> CompletedProcess:
+) -> CompletedProcess[bytes]:
     common = _build_args(board=True, port=True, verbose=True)
 
     arduino_cli = _arduino_cli()
@@ -33,17 +33,17 @@ def compile(
     ] + common)
 
 
-def core_install(core: str) -> CompletedProcess:
+def core_install(core: str) -> CompletedProcess[bytes]:
     return run([_arduino_cli(), 'core', 'install', core])
 
 
-def upload(path: str) -> CompletedProcess:
+def upload(path: str) -> CompletedProcess[bytes]:
     common = _build_args(board=True, port=True, verbose=True)
 
     return run([_arduino_cli(), 'upload', '--input-file', path] + common)
 
 
-def monitor() -> CompletedProcess:
+def monitor() -> CompletedProcess[bytes]:
     common = _build_args(board=True, port=True)
 
     return run([_arduino_cli(), 'monitor', '-q', '-c', 'baudrate=115200']
