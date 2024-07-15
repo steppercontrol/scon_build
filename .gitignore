@@ -1,6 +1,8 @@
+.envrc
 .gup
 .venv
 /_*
+__pycache__
 
 # nix
 
