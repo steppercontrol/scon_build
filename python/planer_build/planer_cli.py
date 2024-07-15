@@ -40,6 +40,8 @@ class CLI:
     environment: dict = field(default_factory=dict)
 
     def init(self, **kwargs) -> None:
+        self._init_log(kwargs['log_level'])
+
         if 'source' not in kwargs or kwargs['source'] is None:
             source = os.getcwd()
             log.info(f'Auto-detected source directory: {source}')
@@ -348,6 +350,21 @@ class CLI:
     def monitor(self, args) -> None:
         arduino_cli.monitor()
 
+    def _init_log(self, log_level) -> None:
+        if log_level == 0:
+            log_level_str = 'WARNING'
+        if log_level == 1:
+            log_level_str = 'INFO'
+        elif log_level == 2:
+            log_level_str = 'DEBUG'
+
+        log.init(log_level_str)
+
+        if log_level >= 1:
+            log.set_detail(1)
+
+        os.environ['MK_LOG_LEVEL'] = log_level_str
+
     def _validate_dirs(self) -> Tuple[Path, Path]:
         (top_source_dir, top_build_dir) = self._ensure_dirs()
 
@@ -424,16 +441,6 @@ class Parser:
         # args = vars(parsed)
         # del args['func']
         args = parsed
-
-        if args.log_level == 0:
-            log.set_level('WARNING')
-        if args.log_level == 1:
-            log.set_level('INFO')
-        elif args.log_level == 2:
-            log.set_level('DEBUG')
-
-        if args.log_level >= 1:
-            log.set_detail(1)
 
         cli.init(**vars(args))
 
