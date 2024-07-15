@@ -20,7 +20,9 @@ class TestConfig:
         config = self.config
 
         toml_ref = (
-            '''[arduino]
+            '''log_level = "INFO"
+
+[arduino]
 core = "arduino:renesas_uno"
 version = "1.2.0"
 board = "minima"
@@ -33,6 +35,7 @@ column_pins = [16, 17, 18, 19]
 driver = "digital"  # "digital" | "analog"
 
 [motor]
+driver = "driver"
 steps_per_revolution = 2048
 pins = [8, 10, 9, 12]
 
