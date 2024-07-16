@@ -12,7 +12,7 @@ from os.path import isdir, isfile
 import shutil
 from stat import S_IRUSR, S_IWUSR, S_IRGRP, S_IROTH
 import sys
-from typing import Tuple
+from typing import Any, Tuple
 
 import argcomplete
 import mk_build
@@ -39,7 +39,7 @@ class CLI:
     config_file: BuildConfig = field(default_factory=BuildConfig)
     environment: dict[str, str] = field(default_factory=dict)
 
-    def init(self, **kwargs) -> None:
+    def init(self, **kwargs: Any) -> None:
         self._init_log(kwargs['log_level'])
 
         if 'source' not in kwargs or kwargs['source'] is None:
@@ -78,7 +78,7 @@ class CLI:
 
         self._environment_import(**kwargs)
 
-    def configure(self, args) -> None:
+    def configure(self, args: argparse.Namespace) -> None:
         top_build_dir = self.config_file.top_build_dir
         top_build_dir = ensure_type(top_build_dir, Path)
 
@@ -246,7 +246,7 @@ class CLI:
 
         _gup()
 
-    def init_env(self, args) -> None:
+    def init_env(self, args: argparse.Namespace) -> None:
         if args.shell:
             configure_.shell_configure()
 
@@ -281,7 +281,7 @@ class CLI:
                 top_build_dir
             )
 
-    def build(self, args) -> CompletedProcess[bytes]:
+    def build(self, args: argparse.Namespace) -> CompletedProcess[bytes]:
         # TODO pass extra args to gup instead of forcing _build/all.
 
         env = {
@@ -317,7 +317,7 @@ class CLI:
         return run(['gup', '-j', '4', '_build/all'], env=env)
         '''
 
-    def clean(self, args) -> None:
+    def clean(self, args: argparse.Namespace) -> None:
         """ Clean the build directory. """
 
         (_, build_dir) = self._ensure_dirs()
@@ -340,17 +340,17 @@ class CLI:
             for jj in to_delete:
                 os.remove(jj)
 
-    def upload(self, args) -> None:
+    def upload(self, args: argparse.Namespace) -> None:
         # arduino-cli upload $sketch -b $BOARD -p $port -v && \
         # arduino-cli upload --input-file $sketch -b $BOARD -p $port -v && \
         # arduino-cli monitor -q --raw -b $BOARD -p $port -c baudrate=115200
 
         arduino_cli.upload(args.filename)
 
-    def monitor(self, args) -> None:
+    def monitor(self, args: argparse.Namespace) -> None:
         arduino_cli.monitor()
 
-    def _init_log(self, log_level) -> None:
+    def _init_log(self, log_level: int) -> None:
         if log_level == 0:
             log_level_str = 'WARNING'
         if log_level == 1:
@@ -382,7 +382,7 @@ class CLI:
 
         return (top_source_dir, top_build_dir)
 
-    def _environment_import(self, **kwargs) -> None:
+    def _environment_import(self, **kwargs: Any) -> None:
         if 'wsl' in kwargs and kwargs['wsl']:
             env = {'WSL': 'y'}
         else:
@@ -413,7 +413,7 @@ class CLI:
 
 
 class Parser:
-    def __init__(self, cli) -> None:
+    def __init__(self, cli: CLI) -> None:
         self.parser = argparse.ArgumentParser(
             prog='ProgramName',
             description='What the program does',
@@ -448,31 +448,31 @@ class Parser:
 
         func(args)
 
-    def _init_build(self, cli) -> None:
+    def _init_build(self, cli: CLI) -> None:
         subparser = self.subparsers.add_parser('build')
         subparser.set_defaults(func=cli.build)
 
-    def _init_clean(self, cli) -> None:
+    def _init_clean(self, cli: CLI) -> None:
         subparser = self.subparsers.add_parser('clean')
         subparser.set_defaults(func=cli.clean)
 
-    def _init_configure(self, cli) -> None:
+    def _init_configure(self, cli: CLI) -> None:
         subparser = self.subparsers.add_parser('configure')
         subparser.add_argument('--config', type=str)
         subparser.set_defaults(func=cli.configure)
 
-    def _init_init_env(self, cli) -> None:
+    def _init_init_env(self, cli: CLI) -> None:
         subparser = self.subparsers.add_parser('init')
         subparser.add_argument('--shell', action='store_true')
         subparser.add_argument('--arduino-ide', action='store_true')
         subparser.add_argument('--arduino-core', action='store_true')
         subparser.set_defaults(func=cli.init_env)
 
-    def _init_monitor(self, cli) -> None:
+    def _init_monitor(self, cli: CLI) -> None:
         subparser = self.subparsers.add_parser('monitor')
         subparser.set_defaults(func=cli.monitor)
 
-    def _init_upload(self, cli) -> None:
+    def _init_upload(self, cli: CLI) -> None:
         subparser = self.subparsers.add_parser('upload')
         subparser.add_argument('filename')
         subparser.add_argument('-b', '--board')

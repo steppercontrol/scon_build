@@ -1,7 +1,7 @@
 from dataclasses import asdict
 from operator import itemgetter
 
-from mk_build import CompletedProcess, environ, run
+from mk_build import CompletedProcess, Path, PathInput, environ, run
 import mk_build.config as config_
 import planer_build.configure as planer_config_
 from ..util import win_from_wsl
@@ -11,9 +11,9 @@ planer_config = planer_config_.get()
 
 
 def compile(
-    ino_path,
-    build_path,
-    libraries
+    ino_path: PathInput,
+    build_path: PathInput,
+    libraries: Path
 ) -> CompletedProcess[bytes]:
     common = _build_args(board=True, port=True, verbose=True)
 
@@ -50,7 +50,11 @@ def monitor() -> CompletedProcess[bytes]:
                + common)
 
 
-def _build_args(board=False, port=False, verbose=False) -> list[str]:
+def _build_args(
+    board: bool = False,
+    port: bool = False,
+    verbose: bool = False
+) -> list[str]:
     args = []
 
     if board:

@@ -3,7 +3,7 @@
 from dataclasses import dataclass, field
 import string
 from os.path import exists
-from typing import Optional
+from typing import Any, Optional, Sequence
 
 from mk_build import log, environ, eprint, path, Path, PathInput
 from mk_build.config import BaseConfig, Config as BuildConfig
@@ -77,7 +77,7 @@ def arduino_ide_configure(
     _arduino_ide_platform_configure(config, build_config, source, build)
 
 
-def _ensure_arduino_ide(config: 'Config'):
+def _ensure_arduino_ide(config: 'Config') -> None:
     data = config.environment['arduino_ide_data']
 
     if not exists(data):
@@ -162,8 +162,8 @@ def _arduino_ide_platform_configure(
             fi.write(out_line)
 
 
-def _arduino_core_path(config) -> Path:
-    arch = _arduino_arch(config.arduino.core)
+def _arduino_core_path(config: 'Config') -> Path:
+    arch = _arduino_arch(ensure_type(config.arduino.core, str))
     version = config.arduino.version
 
     return Path(f"{config.environment['arduino']}/hardware/{arch}/{version}")
@@ -220,8 +220,10 @@ class Config(BaseConfig):
         t = ensure_type(toml['keypad'], Table)
 
         subs: dict[str, str | int] = {
-            'row_pins': Config._initializer(t['row_pins']),
-            'col_pins': Config._initializer(t['column_pins']),
+            'row_pins': Config._initializer(ensure_type(t['row_pins'],
+                                            list[int])),
+            'col_pins': Config._initializer(ensure_type(t['column_pins'],
+                                            list[int]))
         }
 
         keypad = string.Template(_config['keypad']).substitute(subs)
@@ -241,7 +243,7 @@ class Config(BaseConfig):
                 t['steps_per_revolution'],
                 int
             ),
-            'pins': Config._initializer(t['pins'])
+            'pins': Config._initializer(ensure_type(t['pins'], list[int]))
         }
 
         motor = string.Template(_config['motor']).substitute(subs)
@@ -273,11 +275,11 @@ class Config(BaseConfig):
         with open(path, 'w') as fi:
             fi.write(template)
 
-    def write_toml(self, path: str, mode='w') -> None:
+    def write_toml(self, path: str, mode: str = 'w') -> None:
         self.write(path, mode)
 
     @staticmethod
-    def _initializer(list_) -> str:
+    def _initializer(list_: Sequence[int]) -> str:
         array = str(list_)
         return '{' + array[1:-1] + '}'
 
@@ -351,7 +353,7 @@ ${display}
 #endif // Planer__config_h_INCLUDED"""}
 
 
-def _create(*args, **kwargs) -> Config:
+def _create(*args: Any, **kwargs: Any) -> Config:
     config_path = f'{environ("top_build_dir")}/config.toml'
 
     if exists(config_path):
