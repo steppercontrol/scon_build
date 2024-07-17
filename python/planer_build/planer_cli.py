@@ -39,8 +39,10 @@ class CLI:
     config_file: BuildConfig = field(default_factory=BuildConfig)
     environment: dict[str, str] = field(default_factory=dict)
 
-    def init(self, **kwargs: Any) -> None:
+    def init(self, load: bool, **kwargs: Any) -> None:
         self._init_log(kwargs['log_level'])
+
+        log.debug(f'parsed args {kwargs}')
 
         if 'source' not in kwargs or kwargs['source'] is None:
             source = os.getcwd()
@@ -63,7 +65,7 @@ class CLI:
 
         path = f'{build}/config.toml'
 
-        if isfile(path):
+        if load and isfile(path):
             self.config = PlanerConfig.from_file(path)
             self.config_file = BuildConfig.from_file(path)
 
@@ -106,8 +108,6 @@ class CLI:
 
         def _build() -> None:
             """ Write build configuration to config.toml. """
-
-            self.config_file = BuildConfig()
 
             path = f'{self.config_file.top_build_dir}/config.toml'
 
@@ -425,11 +425,11 @@ class Parser:
         parsed = self.parser.parse_args(sys.argv[1:])
 
         func = parsed.func
-        # args = vars(parsed)
-        # del args['func']
         args = parsed
 
-        cli.init(**vars(args))
+        load = func != cli.configure
+
+        cli.init(load, **vars(args))
 
         del args.func
 
