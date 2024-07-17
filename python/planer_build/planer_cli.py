@@ -74,6 +74,9 @@ class CLI:
         self.config_file.top_source_dir = Path(source)
         self.config_file.top_build_dir = Path(build)
 
+        if kwargs['verbose'] != 0:
+            self.config_file.verbose = kwargs['verbose']
+
         self._validate_dirs()
 
         # Determine paths for Arduino installation.
@@ -416,6 +419,7 @@ class Parser:
         self._init_upload(cli)
 
         self.parser.add_argument('-l', '--log-level', type=int, default=0)
+        self.parser.add_argument('-v', '--verbose', action='count', default=0)
         self.parser.add_argument('--source')
         self.parser.add_argument('--build')
         self.parser.add_argument('--wsl', action='store_true')
