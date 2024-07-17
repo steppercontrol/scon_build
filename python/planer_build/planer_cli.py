@@ -17,7 +17,7 @@ from typing import Any, Tuple
 import argcomplete
 import mk_build
 from mk_build.config import Config as BuildConfig
-from mk_build import environ, eprint, gup, Path
+from mk_build import build_dir, environ, eprint, gup, Path
 
 from mk_build import CompletedProcess, log, run
 from mk_build.validate import ensure_type
@@ -33,6 +33,13 @@ from .util import wsl_from_win
 _builders_dir = 'builders'
 
 
+def _detect_top_source_dir() -> str:
+    source = os.getcwd()
+    log.info(f'Auto-detected source directory: {source}')
+
+    return source
+
+
 @dataclass
 class CLI:
     config: PlanerConfig = field(default_factory=PlanerConfig)
@@ -44,12 +51,6 @@ class CLI:
 
         log.debug(f'parsed args {kwargs}')
 
-        if 'source' not in kwargs or kwargs['source'] is None:
-            source = os.getcwd()
-            log.info(f'Auto-detected source directory: {source}')
-        else:
-            source = kwargs['source']
-
         # The top build directory will have been set when we imported
         # mk_build.config above. Override it if provided.
 
@@ -58,10 +59,6 @@ class CLI:
             os.environ['top_build_dir'] = build
         else:
             build = ensure_type(environ('top_build_dir'), str)
-
-        # TODO not sure if we need this in environment
-
-        os.environ['top_source_dir'] = source
 
         path = f'{build}/config.toml'
 
@@ -288,16 +285,14 @@ class CLI:
             )
 
     def build(self, args: argparse.Namespace) -> CompletedProcess[bytes]:
-        # TODO pass extra args to gup instead of forcing _build/all.
-
         env = {
             'ARDUINO_CLI': self.config.environment['arduino_cli']
         }
 
         if len(args.targets) == 0:
-            targets = ['_build/all']
+            targets = [f'{build_dir()}/all']
         else:
-            targets = args.targets
+            targets = [f'{build_dir()}/{it}' for it in args.targets]
 
         return ensure_type(
             gup(targets, jobs=4, env=env),
