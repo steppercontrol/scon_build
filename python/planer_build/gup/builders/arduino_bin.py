@@ -17,12 +17,16 @@ class ArduinoBin(Target):
 
     libraries: Path = field(default_factory=Path)
 
-    def update(self) -> None:
+    def update(self) -> CompletedProcess[bytes]:
         super().update()
 
         Path(self.sources[0]).touch()
 
-        arduino_cli.compile(self.sources[0], build_dir(), self.libraries)
+        return arduino_cli.compile(
+            self.sources[0],
+            build_dir(),
+            self.libraries
+        )
 
 
 if __name__ == '__main__':

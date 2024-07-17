@@ -159,31 +159,32 @@ class CLI:
                     shutil.copy(source, dest)
                     chmod(dest_file, attrs)
 
-            builders = fs.joinpath(_builders_dir)
+            builders = str(fs.joinpath(_builders_dir))
 
-            for it in walk(builders):
-                dir_name = Path(it[0]).relative_to(builders)
+            for it2 in walk(builders):
+                dir_name = Path(it2[0]).relative_to(builders)
 
-                dir_names = it[1]
-                file_names = filter(
-                    lambda x: (x == 'Gupfile' or x.endswith('.gup')
-                               or x.endswith('.py')),
-                    it[2]
+                dir_names = it2[1]
+                file_names = list(
+                    filter(
+                        lambda x: (x == 'Gupfile' or x.endswith('.gup')
+                                   or x.endswith('.py')),
+                        it2[2]
+                    )
                 )
 
                 for d in dir_names:
                     makedirs(
-                        Path(self.config_file.top_build_dir, d),
+                        Path(top_build_dir, d),
                         exist_ok=True
                     )
 
-                dest_dir = Path(self.config_file.top_build_dir, _builders_dir)
+                dest_dir = Path(top_build_dir, _builders_dir)
                 makedirs(dest_dir, exist_ok=True)
 
                 for name in file_names:
                     source = Path(builders, dir_name, name)
-                    dest = Path(self.config_file.top_build_dir, _builders_dir,
-                                dir_name)
+                    dest = Path(top_build_dir, _builders_dir, dir_name)
                     dest_file = Path(dest, name)
 
                     # print(f'src {source} dest {dest}')
