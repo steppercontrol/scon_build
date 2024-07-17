@@ -291,9 +291,13 @@ class CLI:
             'ARDUINO_CLI': self.config.environment['arduino_cli']
         }
 
+        if len(args.targets) == 0:
+            targets = ['_build/all']
+        else:
+            targets = args.targets
 
         return ensure_type(
-            gup(['_build/all'], jobs=4, env=env),
+            gup(targets, jobs=4, env=env),
             CompletedProcess
         )
 
@@ -433,6 +437,7 @@ class Parser:
 
     def _init_build(self, cli: CLI) -> None:
         subparser = self.subparsers.add_parser('build')
+        subparser.add_argument('targets', nargs='*')
         subparser.set_defaults(func=cli.build)
 
     def _init_clean(self, cli: CLI) -> None:
