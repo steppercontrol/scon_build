@@ -30,7 +30,7 @@ def compile(
     return run([
         arduino_cli, 'compile', ino_path,
         '--optimize-for-debug',
-        '--build-path', build_path,
+        '--output-dir', build_path,
         '--warnings', 'all',
         '--libraries', libraries_str
     ] + common)
