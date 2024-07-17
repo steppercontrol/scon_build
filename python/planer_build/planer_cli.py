@@ -55,7 +55,7 @@ class CLI:
             build = str(Path(kwargs['build']).absolute())
             os.environ['top_build_dir'] = build
         else:
-            build = environ('top_build_dir')
+            build = ensure_type(environ('top_build_dir'), str)
 
         # TODO not sure if we need this in environment
 
@@ -92,7 +92,7 @@ class CLI:
 
         cfg = PlanerConfig.from_file(scon_config)
 
-        def _planer():
+        def _planer() -> None:
             """ Write project configuration to config.toml. """
 
             if not isdir(top_build_dir):
@@ -104,7 +104,7 @@ class CLI:
 
             cfg.write_toml(path, 'w')
 
-        def _build():
+        def _build() -> None:
             """ Write build configuration to config.toml. """
 
             self.config_file = BuildConfig()
@@ -116,13 +116,13 @@ class CLI:
 
             self.config_file.write(path, 'a')
 
-        def _config_h():
+        def _config_h() -> None:
             """ Write project configuration to config.h. """
             path = f'{self.config_file.top_build_dir}/config.h'
 
             cfg.write_config_h(path)
 
-        def _gup():
+        def _gup() -> None:
             """ Copy gup files. """
 
             log.debug(f"source {files('planer_build.gup._build')}")
@@ -131,11 +131,13 @@ class CLI:
 
             log.debug(f'fs {fs}')
 
-            _build = fs.joinpath('_build')
+            _build = ensure_type(fs.joinpath('_build'), Path)
 
             attrs = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
 
-            for it in walk(_build):
+            top_build_dir = ensure_type(self.config_file.top_build_dir, Path)
+
+            for it in walk(str(_build)):
                 dir_name = Path(it[0]).relative_to(_build)
 
                 dir_names = it[1]
@@ -143,13 +145,13 @@ class CLI:
 
                 for d in dir_names:
                     makedirs(
-                        Path(self.config_file.top_build_dir, d),
+                        Path(top_build_dir, d),
                         exist_ok=True
                     )
 
                 for name in file_names:
                     source = Path(_build, dir_name, name)
-                    dest = Path(self.config_file.top_build_dir, dir_name)
+                    dest = Path(top_build_dir, dir_name)
                     dest_file = Path(dest, name)
 
                     # print(f'src {source} dest {dest}')
@@ -388,7 +390,10 @@ class CLI:
         else:
             env = {}
 
-        set_env = mk_build.path(files('planer_build.tools'), 'planer_set_env')
+        set_env = mk_build.path(
+            ensure_type(files('planer_build.tools'), Path),
+            'planer_set_env'
+        )
 
         result = run([set_env], env=env, capture_output=True)
 

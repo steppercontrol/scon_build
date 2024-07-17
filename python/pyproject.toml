@@ -34,17 +34,23 @@ strict = true
 module = [
     "planer_build.configure",
     "planer_build.gup.builders.arduino_bin",
-    "planer_build.planer_cli",
     "planer_build.tools.arduino_cli",
     "planer_build.util",
     "test.test_config"
 ]
 disable_error_code = [
-    "attr-defined",
+    "override"
 ]
-disallow_untyped_calls = false
-check_untyped_defs = false
-disallow_untyped_defs = false
+
+[[tool.mypy.overrides]]
+module = [
+    "planer_build.planer_cli",
+]
+disable_error_code = [
+    "arg-type",
+    "assignment",
+    "type-var"
+]
 
 [tool.pytest.ini_options]
 testpaths = [ "test" ]

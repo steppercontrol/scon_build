@@ -28,7 +28,9 @@ class ArduinoBin(Target):
 if __name__ == '__main__':
     libraries = path(top_source_dir(), 'libraries')
 
-    sources = top_source_dir_add([path(config.target).with_suffix('')])
+    sources = top_source_dir_add(
+        [path(ensure_type(config.target, Path)).with_suffix('')]
+    )
 
     builder = ArduinoBin(libraries=libraries, sources=sources)
 

@@ -43,7 +43,7 @@ def envrc_write(build: PathInput) -> None:
 
 
 def shell_configure() -> None:
-    rc = Path(environ('HOME'), '.bashrc')
+    rc = Path(ensure_type(environ('HOME'), str), '.bashrc')
     out_line = 'eval "$(direnv hook bash)"'
 
     found = False
@@ -132,7 +132,7 @@ def _arduino_ide_platform_configure(
     platform_path = path(_arduino_core_path(config), 'platform.local.txt')
 
     if build_config.system.build.system == 'wsl':
-        build = win_from_wsl(build)
+        build = Path(win_from_wsl(build))
 
     # flags for master branch
     flags = f'-I{build} -DU8G2_USE_DYNAMIC_ALLOC'
@@ -220,10 +220,9 @@ class Config(BaseConfig):
         t = ensure_type(toml['keypad'], Table)
 
         subs: dict[str, str | int] = {
-            'row_pins': Config._initializer(ensure_type(t['row_pins'],
-                                            list[int])),
+            'row_pins': Config._initializer(ensure_type(t['row_pins'], list)),
             'col_pins': Config._initializer(ensure_type(t['column_pins'],
-                                            list[int]))
+                                            list))
         }
 
         keypad = string.Template(_config['keypad']).substitute(subs)
@@ -243,7 +242,7 @@ class Config(BaseConfig):
                 t['steps_per_revolution'],
                 int
             ),
-            'pins': Config._initializer(ensure_type(t['pins'], list[int]))
+            'pins': Config._initializer(ensure_type(t['pins'], list))
         }
 
         motor = string.Template(_config['motor']).substitute(subs)
@@ -367,5 +366,5 @@ def _create(*args: Any, **kwargs: Any) -> Config:
 config = _create()
 
 
-def get():
+def get() -> Config:
     return config

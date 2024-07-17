@@ -3,6 +3,7 @@ from operator import itemgetter
 
 from mk_build import CompletedProcess, Path, PathInput, environ, run
 import mk_build.config as config_
+from mk_build.validate import ensure_type
 import planer_build.configure as planer_config_
 from ..util import win_from_wsl
 
@@ -21,15 +22,17 @@ def compile(
 
     if arduino_cli.endswith('.exe'):
         ino_path = win_from_wsl(ino_path)
-        libraries = win_from_wsl(libraries)
+        libraries_str = win_from_wsl(libraries)
         build_path = win_from_wsl(build_path)
+    else:
+        libraries_str = str(libraries)
 
     return run([
         arduino_cli, 'compile', ino_path,
         '--optimize-for-debug',
         '--build-path', build_path,
         '--warnings', 'all',
-        '--libraries', libraries
+        '--libraries', libraries_str
     ] + common)
 
 
@@ -61,7 +64,7 @@ def _build_args(
         args += ['-b', _arduino_fqbn()]
 
     if port:
-        args += ['-p', planer_config.arduino.port]
+        args += ['-p', ensure_type(planer_config.arduino.port, str)]
 
     if verbose and config.verbose > 0:
         args.append('-v')
@@ -70,7 +73,7 @@ def _build_args(
 
 
 def _arduino_cli() -> str:
-    return environ('ARDUINO_CLI', 'arduino-cli')
+    return ensure_type(environ('ARDUINO_CLI', 'arduino-cli'), str)
 
 
 def _arduino_fqbn() -> str:

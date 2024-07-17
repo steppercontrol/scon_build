@@ -7,7 +7,7 @@ class TestConfig:
     def setup_method(self) -> None:
         self.config = Config.from_file(f'{data_dir}/config.toml')
 
-    def test_config(self):
+    def test_config(self) -> None:
         config = self.config
         arduino = config.arduino
 
@@ -16,7 +16,7 @@ class TestConfig:
         assert arduino.board == "minima"
         assert arduino.port == "/dev/ttyACM0"
 
-    def test_config_str(self):
+    def test_config_str(self) -> None:
         config = self.config
 
         toml_ref = (
