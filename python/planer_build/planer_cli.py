@@ -66,9 +66,25 @@ class CLI:
             self.config = PlanerConfig.from_file(path)
             self.config_file = BuildConfig.from_file(path)
 
-        # If arguments are provided, override config file.
+        # If source argument is present, override config file top_source_dir.
 
-        self.config_file.top_source_dir = Path(source)
+        # If source argument and config file are absent, auto-detect
+        # top_source_dir.
+
+        if kwargs['source'] is None:
+            source = _detect_top_source_dir()
+
+            override_source = self.config_file.top_source_dir is None
+        else:
+            source = kwargs['source']
+            override_source = True
+
+        if override_source:
+            self.config_file.top_source_dir = Path(source)
+
+        # Override config file top_build_dir with build argument or from
+        # environment.
+
         self.config_file.top_build_dir = Path(build)
 
         if kwargs['verbose'] != 0:
