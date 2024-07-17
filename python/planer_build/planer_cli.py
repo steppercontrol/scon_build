@@ -17,7 +17,7 @@ from typing import Any, Tuple
 import argcomplete
 import mk_build
 from mk_build.config import Config as BuildConfig
-from mk_build import environ, eprint, Path
+from mk_build import environ, eprint, gup, Path
 
 from mk_build import CompletedProcess, log, run
 from mk_build.validate import ensure_type
@@ -291,34 +291,11 @@ class CLI:
             'ARDUINO_CLI': self.config.environment['arduino_cli']
         }
 
-        return run(['gup', '-j', '4', '_build/all'], env=env)
 
-        '''
-        if not exists('gup'):
-            gup_dir = f'{self.config_file.top_source_dir}/gup'
-            gup_src = f"{environ('GUP', required=True)}/gup"
-
-            if islink(gup_dir):
-                remove(gup_dir)
-
-            symlink(gup_src, gup_dir)
-        '''
-
-        '''
-        sys_path = ':'.join(sys.path)
-
-        python_path = sys_path + ':' + environ('PYTHONPATH')
-
-        print(f'build run {sys.path}\n{python_path}')
-
-        ppp = '/nix/store/pjvysa220hgr6rj76h31x88k1z5rdbz8-python3.11-planer_build-0.1.0/bin:/nix/store/psiil1nphwqprd8fb8842b0hwgpn3bix-wrapped-obs-studio-30.1.2/lib/obs-scripting:/home/boss/src/planer:/nix/store/7hnr99nxrd2aw6lghybqdmkckq60j6l9-python3-3.11.9/lib/python311.zip:/nix/store/7hnr99nxrd2aw6lghybqdmkckq60j6l9-python3-3.11.9/lib/python3.11:/nix/store/7hnr99nxrd2aw6lghybqdmkckq60j6l9-python3-3.11.9/lib/python3.11/lib-dynload:/nix/store/7hnr99nxrd2aw6lghybqdmkckq60j6l9-python3-3.11.9/lib/python3.11/site-packages:/nix/store/pjvysa220hgr6rj76h31x88k1z5rdbz8-python3.11-planer_build-0.1.0/lib/python3.11/site-packages:/nix/store/abnch2ab1jfh3kvlrf1fshnx4i2p7kdf-python3.11-argcomplete-3.3.0/lib/python3.11/site-packages:/nix/store/ld1g0lm87dq2jfg427b2jbxb4brrdh5y-python3.11-mk_build-0.1.0/lib/python3.11/site-packages:/nix/store/59clyj18mvjxbkig5z76m0b40pxkxkfq-python3.11-pytest-8.1.1/lib/python3.11/site-packages:/nix/store/ihj3vxwv7wn7lgpja37gjvqb55x0kx90-python3.11-iniconfig-2.0.0/lib/python3.11/site-packages:/nix/store/lwjnn5iyh8jzzhbvlqw31498mhhkmhcx-python3.11-packaging-24.0/lib/python3.11/site-packages:/nix/store/bc5iy2ky85k1v46hfs4myhd0c35i2rmi-python3.11-pluggy-1.4.0/lib/python3.11/site-packages:/nix/store/w1ar41xsp31nris574c2gl0c1vsl7hcn-python3.11-tomlkit-0.12.4/lib/python3.11/site-packages:/nix/store/g4h9138sa5wh6kkfwc7f49q169wcs8s9-python3.11-setuptools-69.5.1/lib/python3.11/site-packages:/nix/store/psiil1nphwqprd8fb8842b0hwgpn3bix-wrapped-obs-studio-30.1.2/lib/obs-scripting:/nix/store/psiil1nphwqprd8fb8842b0hwgpn3bix-wrapped-obs-studio-30.1.2/lib/obs-scripting'  # noqa
-
-        env = {
-            'PYTHONPATH': ppp
-        }
-
-        return run(['gup', '-j', '4', '_build/all'], env=env)
-        '''
+        return ensure_type(
+            gup(['_build/all'], jobs=4, env=env),
+            CompletedProcess
+        )
 
     def clean(self, args: argparse.Namespace) -> None:
         """ Clean the build directory. """
