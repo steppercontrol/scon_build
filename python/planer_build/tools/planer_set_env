@@ -9,7 +9,7 @@ exit_handler() {
     fi
 }
 
-wsl_env() {
+win_env() {
     var="$($POWERSHELL -command \"\$env:$1\")"
 
     if [ "$?" -ne 0 ]; then
@@ -27,6 +27,10 @@ wsl_env() {
     printf "%s" "$var"
 }
 
+wsl_env() {
+    echo "$1" | sed -e 's|C:|/mnt/c|g' -e 's|\\|/|g'
+}
+
 require_var() {
     if [ -z "$2" ]; then
         printf "error: Windows variable %s is not set\n" "$1" > /dev/stderr
@@ -38,22 +42,29 @@ set_env() {
     if [ ! -z "$WSL" ] || [ -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
         # Running under WSL, so set the necessary environment variables.
 
-        : ${LOCALAPPDATA:="$(wsl_env LOCALAPPDATA)"}
+        : ${LOCALAPPDATA:="$(win_env LOCALAPPDATA)"}
 
         require_var LOCALAPPDATA "$LOCALAPPDATA" || return 1
 
-        : ${USERPROFILE:="$(wsl_env USERPROFILE)"}
+        echo appd "$LOCALAPPDATA"
+        echo appd "$(wsl_env $LOCALAPPDATA)"
+
+        : ${USERPROFILE:="$(win_env USERPROFILE)"}
 
         require_var USERPROFILE "$USERPROFILE" || return 1
 
-        : ${USERNAME:="$(wsl_env USERNAME)"}
+        : ${USERNAME:="$(win_env USERNAME)"}
 
         require_var USERNAME "$USERNAME" || return 1
 
         : ${ARDUINO:="$LOCALAPPDATA"'\Arduino15\packages\arduino'}
-        # TODO fix path for all users/local user install
-        # : ${ARDUINO_IDE:="$LOCALAPPDATA"'\Programs\Arduino IDE'}
-        : ${ARDUINO_IDE:='C:\Program Files\Arduino IDE'}
+
+        : ${ARDUINO_IDE:="$LOCALAPPDATA"'\Programs\Arduino IDE'}
+
+        if [ ! -f "$(wsl_env $ARDUINO_IDE)" ]; then
+            ARDUINO_IDE='C:\Program Files\Arduino IDE'
+        fi
+
         : ${ARDUINO_IDE_DATA:="$USERPROFILE"'\.arduinoIDE'}
         : ${ARDUINO_CLI:="$ARDUINO_IDE"'\resources\app\lib\backend\resources\arduino-cli.exe'}
 
