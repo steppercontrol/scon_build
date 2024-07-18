@@ -73,7 +73,7 @@ def arduino_ide_configure(
 ) -> None:
     _ensure_arduino_ide(config)
 
-    _arduino_ide_cli_configure(config, source, build)
+    _arduino_ide_cli_configure(config, build_config, source, build)
     _arduino_ide_platform_configure(config, build_config, source, build)
 
 
@@ -86,6 +86,7 @@ def _ensure_arduino_ide(config: 'Config') -> None:
 
 def _arduino_ide_cli_configure(
     config: 'Config',
+    build_config: BuildConfig,
     source: Path,
     build: Path
 ) -> None:
@@ -108,11 +109,15 @@ def _arduino_ide_cli_configure(
                 fi.write(it)
                 replaced = True
             else:
-                fi.write(f'{it[:idx + len("user:")]} {source}\n')
+                if build_config.system.build.system == 'wsl':
+                    source_str = win_from_wsl(source)
+                else:
+                    source_str = str(source)
 
-                eprint(
-                    f'arduino-cli.yaml: replace user directory with "{source}"'
-                )
+                fi.write(f'{it[:idx + len("user:")]} {source_str}\n')
+
+                eprint(f'arduino-cli.yaml: replace user directory with'
+                       f' "{source_str}"')
                 replaced = True
 
         if not replaced:
@@ -120,8 +125,6 @@ def _arduino_ide_cli_configure(
                 'arduino-cli.yaml: user directory entry not found'
             )
 
-
-# TODO correctly write windows path for sketchbook location.
 
 def _arduino_ide_platform_configure(
     config: 'Config',
