@@ -298,17 +298,20 @@ class Config(BaseConfig):
 
 _config = {
     'log': """
+__attribute__((unused))
 static struct LogConfig logConfig = {
     .level = ${log_level}
 };
     """,
     'keypad': """
+__attribute__((unused))
 static struct KeypadConfig keypadConfig = {
     .rowPins = ${row_pins},
     .colPins = ${col_pins}
 };
     """,
     'motor': """
+__attribute__((unused))
 static struct MotorConfig motorConfig = {
     .driver = ${driver},
     .stepsPerRevolution = ${steps_per_revolution},
@@ -316,6 +319,7 @@ static struct MotorConfig motorConfig = {
 };
     """,
     'display': """
+__attribute__((unused))
 static struct DisplayConfig displayConfig = {
     .controller = ${controller},
     .bufferMode = ${buffer_mode},
