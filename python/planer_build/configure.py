@@ -337,10 +337,7 @@ static struct DisplayConfig displayConfig = {
     'full': """#ifndef Planer__config_h_INCLUDED
 #define Planer__config_h_INCLUDED
 
-#include "input.h"
-#include "motor.h"
-#include "display.h"
-#include "util.h"
+#include <Planer.h>
 
 /// Log
 ${log}
