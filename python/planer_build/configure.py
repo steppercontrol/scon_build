@@ -232,15 +232,15 @@ class Config(BaseConfig):
 
         t = ensure_type(toml['motor'], Table)
 
-        driver = ensure_type(t['driver'], str)
+        interface = ensure_type(t['interface'], str)
 
-        if driver == "driver":
-            driver = "motor::Driver"
-        elif driver == "full4wire":
-            driver = "motor::Full4Wire"
+        if interface == "driver":
+            interface = "MotorInterface::Driver"
+        elif interface == "full4wire":
+            interface = "MotorInterface::Full4Wire"
 
         subs = {
-            'driver': driver,
+            'interface': interface,
             'steps_per_revolution': ensure_type(
                 t['steps_per_revolution'],
                 int
@@ -316,7 +316,7 @@ static struct KeypadConfig keypadConfig = {
     'motor': """
 __attribute__((unused))
 static struct MotorConfig motorConfig = {
-    .driver = ${driver},
+    .interface = ${interface},
     .stepsPerRevolution = ${steps_per_revolution},
     .pins = ${pins}
 };
